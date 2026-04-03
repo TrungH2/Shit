@@ -212,8 +212,41 @@ if not isWhitelisted then
         sg:Destroy()
     end)
     checkBindable.Event:Wait()
+    pcall(function()
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Himono",
+            Text = "Key Verified. Loading UI Library...",
+            Duration = 5
+        })
+    end)
 end
-local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
+
+local Rayfield
+local eh_success, err = pcall(function()
+    print("[Himono] Fetching Rayfield...")
+    local rf_source
+    local success_http, res_http = pcall(function() return game:HttpGet("https://sirius.menu/rayfield") end)
+    if success_http and res_http and #res_http > 100 then
+        rf_source = res_http
+    else
+        print("[Himono] HttpGet failed, trying alternative URL...")
+        rf_source = game:HttpGet("https://raw.githubusercontent.com/SiriusSoftwareDesign/Rayfield/main/source.lua")
+    end
+    
+    if not rf_source or #rf_source < 100 then
+        error("Could not fetch Rayfield (Network error or URL blocked)")
+    end
+    
+    print("[Himono] Scripting Rayfield...")
+    local rf_func, rf_err = loadstring(rf_source)
+    if not rf_func then
+        error("Rayfield Loadstring Error: " .. tostring(rf_err))
+    end
+    Rayfield = rf_func()
+    print("[Himono] Rayfield Loaded.")
+
+
+
 local CFG = {
     Position         = "Above",
     Distance         = 5,
@@ -308,12 +341,20 @@ local Library = {
     end
 }
 if getgenv().himono_Running then
-    warn("Script already running!")
+    warn("Script already running! If you need to restart, rejoin or clear getgenv().himono_Running")
+    pcall(function()
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Himono",
+            Text = "Script is already running in background.",
+            Duration = 5
+        })
+    end)
     return
 end
 getgenv().himono_Running = true
-repeat task.wait() until game:IsLoaded()
-repeat task.wait() until game.GameId ~= 0
+print("[Himono] Initializing services...")
+
+
 function missing(t, f, fallback)
 	if type(f) == t then return f end
 	return fallback
@@ -391,8 +432,8 @@ local fire = {
     "https://i.pinimg.com/1200x/40/cb/c2/40cbc211cc86a1e131f25dd0fa339e65.jpg",
     "https://i.pinimg.com/736x/51/27/c5/5127c5c03c81b72fbd666ca0ee9c20f3.jpg"
 }
-local randomIndex = math.random(1, #fire)
-local eh_success, err = pcall(function()
+    local randomIndex = math.random(1, #fire)
+
 local PriorityTasks = {"Boss", "Pity Boss", "Summon [Other]", "Summon", "Level Farm", "All Mob Farm", "Mob", "Merchant", "Alt Help"}
 local DefaultPriority = {"Boss", "Pity Boss", "Summon [Other]", "Summon", "Level Farm", "All Mob Farm", "Mob", "Merchant", "Alt Help"}
 local TargetGroupId = 1002185259
@@ -5923,7 +5964,21 @@ Library:Notify("Script loaded.", 2)
 Library:Notify("Report bug and give suggestion in Discord!", 5)
 end)
 if not eh_success then
-    warn("HIMONO CRITICAL ERROR: " .. tostring(err))
+    getgenv().himono_Running = false
+    local error_msg = "HIMONO CRITICAL ERROR: " .. tostring(err)
+    warn(error_msg)
     pcall(function() if setclipboard then setclipboard(tostring(err)) end end)
-    pcall(function() Library:Notify("ERROR: " .. tostring(err), 4) end)
+    
+    -- Fallback notification since Rayfield might not be loaded
+    pcall(function()
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Himono Error",
+            Text = "Script failed to load. Error copied to clipboard. Check F9 console.",
+            Duration = 10
+        })
+    end)
+    
+    if Library and Library.Notify then
+        pcall(function() Library:Notify("CRITICAL ERROR: " .. tostring(err), 10) end)
+    end
 end
