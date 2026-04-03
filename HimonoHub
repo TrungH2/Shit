@@ -492,12 +492,33 @@ local Shared = {
     TradeState = {},
 }
 local Script_Start_Time = os.time()
+local function getPlayerStat(statName)
+    local val = 0
+    pcall(function()
+        local containers = {"PlayerData", "Data", "leaderstats", "Stats", "PlayerStats", "info"}
+        for _, cName in ipairs(containers) do
+            local c = Plr:FindFirstChild(cName)
+            if c then
+                local v = c:FindFirstChild(statName) or c:FindFirstChild(statName:lower()) or c:FindFirstChild(statName:sub(1,1):upper() .. statName:sub(2))
+                if v and (v:IsA("ValueBase") or v:IsA("StringValue")) then
+                    val = tonumber(v.Value) or 0
+                    if val > 0 then return end
+                end
+            end
+        end
+        -- Search attributes if value not found
+        val = Plr:GetAttribute(statName) or Plr:GetAttribute(statName:lower()) or 0
+    end)
+    return tonumber(val) or 0
+end
+
 local StartStats = {
-    Level = Plr.Data.Level.Value,
-    Money = Plr.Data.Money.Value,
-    Gems = Plr.Data.Gems.Value,
-    Bounty = (Plr:FindFirstChild("leaderstats") and Plr.leaderstats:FindFirstChild("Bounty") and Plr.leaderstats.Bounty.Value) or 0
+    Level = getPlayerStat("Level"),
+    Money = getPlayerStat("Money"),
+    Gems = getPlayerStat("Gems") or getPlayerStat("Gem"),
+    Bounty = getPlayerStat("Bounty") or 0
 }
+
 local function GetSessionTime()
     local seconds = os.time() - Script_Start_Time
     local hours = math.floor(seconds / 3600)
@@ -1153,7 +1174,8 @@ local function PostToWebhook()
     if url == "" or not url:find("discord.com/api/webhooks/") then return end
     local selected = Options.SelectedData.Value
     local allowedRarity = Options.SelectedItemRarity.Value or {}
-    local data = Plr.Data
+    local data = Plr:FindFirstChild("Data") or Plr:FindFirstChild("PlayerData") or Plr
+
     local lstats = Plr:FindFirstChild("leaderstats")
     local bounty = lstats and lstats:FindFirstChild("Bounty") and lstats.Bounty.Value or 0
     local desc = "### Sailor Piece\n"
@@ -2718,7 +2740,8 @@ local function EnsureQuestSettings()
 end
 local function GetBestQuestNPC()
     local QuestModule = Modules.Quests
-    local playerLevel = Plr.Data.Level.Value
+    local playerLevel = getPlayerStat("Level")
+
     local bestNPC = "QuestNPC1"
     local highestLevel = -1
     for npcId, questData in pairs(QuestModule.RepeatableQuests) do
@@ -3945,10 +3968,13 @@ Library.CreateWindow = function(self, config)
     })
     UI_Window = w
     local mockLib = {}
-    mockLib.AddTab = function(self, tConfig)
-        local ret = MakeMockTab(w:CreateTab(tConfig.Title or "Tab"))
+    mockLib.AddTab = function(self, tConfig, icon)
+        local title = (type(tConfig) == "table" and tConfig.Title) or tConfig or "Tab"
+        local iconName = (type(tConfig) == "table" and tConfig.Icon) or icon or ""
+        local ret = MakeMockTab(w:CreateTab(title, iconName))
         return ret
     end
+
     return mockLib
 end
 local SaveManager = {
@@ -4165,7 +4191,8 @@ end)
 GB.Information.Left.User:AddLabel("<b>Executor:</b> " .. executorDisplayName .. "\n<b>Status:</b> " .. statusText .. "\n" .. extraNote, true)
 GB.Information.Left.Game:AddButton("Redeem All Codes", function()
     local allCodes = Modules.Codes.Codes
-    local playerLevel = Plr.Data.Level.Value
+    local playerLevel = getPlayerStat("Level")
+
     for codeName, data in pairs(allCodes) do
         local levelReq = data.LevelReq or 0
         if playerLevel >= levelReq then
@@ -5296,7 +5323,8 @@ TB_Tabs.Puzzle.T1:AddButton({
     Text = "Complete Dungeon Puzzle",
     Disabled = not Support.Proximity,
     Func = function()
-        local currentLevel = Plr.Data.Level.Value
+        local currentLevel = getPlayerStat("Level")
+
         if currentLevel >= 5000 then
             UniversalPuzzleSolver("Dungeon")
         else
@@ -5348,7 +5376,8 @@ TB_Tabs.Puzzle.T1:AddButton({
     Text = "Complete Hogyoku Puzzle",
     Disabled = not Support.Proximity,
     Func = function()
-        local currentLevel = Plr.Data.Level.Value
+        local currentLevel = getPlayerStat("Level")
+
         if currentLevel >= 8500 then
             UniversalPuzzleSolver("Hogyoku")
         else
