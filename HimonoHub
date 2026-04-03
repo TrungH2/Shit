@@ -598,8 +598,8 @@ local Modules = {
 local MerchantItemList = Modules.Merchant.ITEMS
 local SortedTitleList = Modules.Title:GetSortedTitleIds()
 local PATH = {
-    Mobs = workspace:WaitForChild('NPCs'),
-    InteractNPCs = workspace:WaitForChild('ServiceNPCs'),
+    Mobs = workspace:WaitForChild('NPCs', 5),
+    InteractNPCs = workspace:WaitForChild('ServiceNPCs', 5),
 }
 local function GetServiceNPC(name)
     return PATH.InteractNPCs:FindFirstChild(name)
@@ -613,12 +613,12 @@ local NPCs = {
 }
 local UI = {
     Merchant = {
-        Regular = PGui:WaitForChild("MerchantUI"),
-        Dungeon = PGui:WaitForChild("DungeonMerchantUI"),
+        Regular = PGui:WaitForChild("MerchantUI", 5),
+        Dungeon = PGui:WaitForChild("DungeonMerchantUI", 5),
         Valentine = PGui:FindFirstChild("ValentineMerchantUI"),
     }
 }
-local pingUI = PGui:WaitForChild("QuestPingUI")
+local pingUI = PGui:WaitForChild("QuestPingUI", 5)
 local SummonMap = {}
 local function GetRemoteBossArg(name)
     local RemoteBossMap = {
@@ -5462,12 +5462,15 @@ end)
 Toggles.AntiKnockback:OnChanged(function(state)
     Thread("AntiKnockback", Func_AntiKnockback, state)
 end)
-local NotifFrame = PGui:WaitForChild("NotificationUI"):WaitForChild("NotificationsFrame")
-NotifFrame.ChildAdded:Connect(function(child)
-    ProcessNotification(child)
-end)
-for _, child in pairs(NotifFrame:GetChildren()) do
-    ProcessNotification(child)
+local NotificationUI = PGui:WaitForChild("NotificationUI", 5)
+local NotifFrame = NotificationUI and NotificationUI:WaitForChild("NotificationsFrame", 5) or nil
+if NotifFrame then
+    NotifFrame.ChildAdded:Connect(function(child)
+        ProcessNotification(child)
+    end)
+    for _, child in pairs(NotifFrame:GetChildren()) do
+        ProcessNotification(child)
+    end
 end
 Toggles.TPW:OnChanged(function(v)
     TPW_S:SetVisible(TPW_T.Value)
@@ -5920,5 +5923,7 @@ Library:Notify("Script loaded.", 2)
 Library:Notify("Report bug and give suggestion in Discord!", 5)
 end)
 if not eh_success then
-    Library:Notify("ERROR: " .. tostring(err), 4)
+    warn("HIMONO CRITICAL ERROR: " .. tostring(err))
+    pcall(function() if setclipboard then setclipboard(tostring(err)) end end)
+    pcall(function() Library:Notify("ERROR: " .. tostring(err), 4) end)
 end
