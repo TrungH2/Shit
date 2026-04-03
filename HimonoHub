@@ -100,7 +100,7 @@ if not isWhitelisted then
     local title = Instance.new("TextLabel")
     title.Size = UDim2.new(1, 0, 0, 50)
     title.BackgroundTransparency = 1
-    title.Text = "Himono Hub"
+    title.Text = "Himono"
     title.TextColor3 = Color3.fromRGB(255, 255, 255)
     title.Font = Enum.Font.GothamBold
     title.TextSize = 24
@@ -1161,7 +1161,7 @@ local function PostToWebhook()
         ["embeds"] = {{
             ["description"] = desc,
             ["color"] = tonumber("ffff77", 16),
-            ["footer"] = { ["text"] = string.format("Himono Hub • Session: %s • %s", GetSessionTime(), os.date("%x %X")) },
+            ["footer"] = { ["text"] = string.format("Himono • Session: %s • %s", GetSessionTime(), os.date("%x %X")) },
             ["thumbnail"] = { ["url"] = catLink }
         }}
     }
@@ -1517,7 +1517,7 @@ local function SendSafetyWebhook(targetPlayer, reason)
                 { ["name"] = "Type", ["value"] = reason, ["inline"] = true },
                 { ["name"] = "ID", ["value"] = "```" .. game.JobId .. "```", ["inline"] = false }
             },
-            ["footer"] = { ["text"] = "Himono Hub • " .. os.date("%x %X") }
+            ["footer"] = { ["text"] = "Himono • " .. os.date("%x %X") }
         }}
     }
     task.spawn(function()
@@ -1554,7 +1554,7 @@ local function CheckServerTypeSafety()
                             { ["name"] = "Username", ["value"] = "`" .. Plr.Name .. "`", ["inline"] = true },
                             { ["name"] = "JobId", ["value"] = "```" .. game.JobId .. "```", ["inline"] = false }
                         },
-                        ["footer"] = { ["text"] = "Himono Hub" }
+                        ["footer"] = { ["text"] = "Himono" }
                     }}
                 }
                 task.spawn(function()
@@ -3881,19 +3881,19 @@ local function MakeMockTab(rayfieldTab)
     return mockTab
 end
 Library.CreateWindow = function(self, config)
-    local hubName = config.Title or "Himono Hub"
+    local hubName = config.Title or "Himono"
     if hubName.match and hubName:match("-") then
         local parts = hubName:split("-")
-        hubName = "Himono Hub V2 " .. (parts[2] or "")
+        hubName = "Himono V2 " .. (parts[2] or "")
     end
     local w = Rayfield:CreateWindow({
         Name = hubName,
-        LoadingTitle = "Himono Hub Loading...",
-        LoadingSubtitle = "by Himono Hub",
+        LoadingTitle = "Himono Loading...",
+        LoadingSubtitle = "by Himono",
         ConfigurationSaving = {
             Enabled = true,
             FolderName = nil,
-            FileName = "HimonoHub.json"
+            FileName = "Himono.json"
         },
         Discord = {
             Enabled = false,
@@ -3926,8 +3926,8 @@ local ThemeManager = {
     ApplyToTab = function() end
 }
 local Window = Library:CreateWindow({
-	Title = "Himono Hub",
-	Footer = "" .. assetName .. " | Himono Hub",
+	Title = "Himono",
+	Footer = "" .. assetName .. " | Himono",
 	NotifySide = "Right",
 	ShowCustomCursor = false,
 	AutoShow = true,
@@ -4112,7 +4112,7 @@ TierLabel = GB.Information.Left.User:AddLabel("<b>Type:</b> " .. initTier)
 TimeLabel = GB.Information.Left.User:AddLabel("<b>Time Left:</b> " .. initTime)
 task.spawn(function()
     while task.wait(5) do
-        if not getgenv().Himono Hub_Running then break end
+        if not getgenv().himono_Running then break end
         local tier, timeLeft = GetJunkieData()
         if TierLabel then TierLabel:SetText("<b>Type:</b> " .. tier) end
         if TimeLabel then TimeLabel:SetText("<b>Time Left:</b> " .. timeLeft) end
@@ -4154,7 +4154,7 @@ GB.Information.Right.Others:AddLabel("- ⚠️ If some features are disabled, it
 GB.Information.Right.Others:AddButton({ 
     Text = "Join Discord Server",
     Func = function()
-        local inviteCode = "qDccUkch9B"
+        local inviteCode = "MvHKWfAS"
         local inviteLink = "https://discord.gg/" .. inviteCode
         if request then
             pcall(function()
@@ -5585,7 +5585,7 @@ Remotes.UpAscend.OnClientEvent:Connect(function(data)
     end
 end)
 task.spawn(function()
-    while getgenv().Himono Hub_Running do
+    while getgenv().himono_Running do
         if Remotes.ReqInventory then
             Remotes.ReqInventory:FireServer()
         end
@@ -5594,7 +5594,7 @@ task.spawn(function()
 end)
 task.spawn(function()
     while task.wait(1) do
-        if not getgenv().Himono Hub_Running then break end
+        if not getgenv().himono_Running then break end
         pcall(function()
             if PityLabel then
                 local current, max = GetCurrentPity()
@@ -5714,7 +5714,7 @@ task.spawn(function()
 end)
 task.spawn(function()
     while task.wait(1) do
-        if not getgenv().Himono Hub_Running then break end
+        if not getgenv().himono_Running then break end
         local char = GetCharacter()
         local root = char and char:FindFirstChild("HumanoidRootPart")
         if root and not Shared.MovingIsland then
@@ -5774,7 +5774,7 @@ MenuGroup:AddDivider()
 MenuGroup:AddLabel("Menu bind")
 	:AddKeyPicker("MenuKeybind", { Default = "U", NoUI = true, Text = "Menu keybind" })
 MenuGroup:AddButton("Unload", function()
-    getgenv().Himono Hub_Running = false
+    getgenv().himono_Running = false
     Shared.Farm = false
     Cleanup(Connections)
     Cleanup(Flags)
@@ -5791,21 +5791,21 @@ SaveManager:SetIgnoreIndexes({ "SelectedMiscAllNPC" })
 SaveManager:SetIgnoreIndexes({ "SelectedMovesetNPC" })
 SaveManager:SetIgnoreIndexes({ "SelectedMasteryNPC" })
 if isfolder("taolao") then
-    if not isfolder("Himono Hub") then
-        makefolder("Himono Hub")
+    if not isfolder("Himono") then
+        makefolder("Himono")
     end
-    if not isfolder("Himono Hub/SailorPiece") then
-        makefolder("Himono Hub/SailorPiece")
+    if not isfolder("Himono/SailorPiece") then
+        makefolder("Himono/SailorPiece")
     end
-    if not isfolder("Himono Hub/SailorPiece/settings") then
-        makefolder("Himono Hub/SailorPiece/settings")
+    if not isfolder("Himono/SailorPiece/settings") then
+        makefolder("Himono/SailorPiece/settings")
     end
     if isfolder("taolao/SailorPiece/settings") then
         for _, file in ipairs(listfiles("taolao/SailorPiece/settings")) do
             if isfile(file) then
                 local filename = file:match("[^/\\]+$")
                 local content = readfile(file)
-                writefile("Himono Hub/SailorPiece/settings/" .. filename, content)
+                writefile("Himono/SailorPiece/settings/" .. filename, content)
                 delfile(file)
             end
         end
@@ -5815,17 +5815,17 @@ if isfolder("taolao") then
         for _, item in ipairs(listfiles("taolao/SailorPiece")) do
             if isfile(item) then
                 local filename = item:match("[^/\\]+$")
-                writefile("Himono Hub/SailorPiece/" .. filename, readfile(item))
+                writefile("Himono/SailorPiece/" .. filename, readfile(item))
                 delfile(item)
             elseif isfolder(item) then
                 local foldername = item:match("[^/\\]+$")
-                if not isfolder("Himono Hub/SailorPiece/" .. foldername) then
-                    makefolder("Himono Hub/SailorPiece/" .. foldername)
+                if not isfolder("Himono/SailorPiece/" .. foldername) then
+                    makefolder("Himono/SailorPiece/" .. foldername)
                 end
                 for _, subfile in ipairs(listfiles(item)) do
                     if isfile(subfile) then
                         local subfilename = subfile:match("[^/\\]+$")
-                        writefile("Himono Hub/SailorPiece/" .. foldername .. "/" .. subfilename, readfile(subfile))
+                        writefile("Himono/SailorPiece/" .. foldername .. "/" .. subfilename, readfile(subfile))
                         delfile(subfile)
                     end
                 end
@@ -5837,17 +5837,17 @@ if isfolder("taolao") then
     for _, file in ipairs(listfiles("taolao")) do
         if isfile(file) then
             local filename = file:match("[^/\\]+$")
-            writefile("Himono Hub/" .. filename, readfile(file))
+            writefile("Himono/" .. filename, readfile(file))
             delfile(file)
         elseif isfolder(file) then
             local foldername = file:match("[^/\\]+$")
-            if not isfolder("Himono Hub/" .. foldername) then
-                makefolder("Himono Hub/" .. foldername)
+            if not isfolder("Himono/" .. foldername) then
+                makefolder("Himono/" .. foldername)
             end
             for _, subfile in ipairs(listfiles(file)) do
                 if isfile(subfile) then
                     local subfilename = subfile:match("[^/\\]+$")
-                    writefile("Himono Hub/" .. foldername .. "/" .. subfilename, readfile(subfile))
+                    writefile("Himono/" .. foldername .. "/" .. subfilename, readfile(subfile))
                     delfile(subfile)
                 end
             end
@@ -5856,8 +5856,8 @@ if isfolder("taolao") then
     end
     delfolder("taolao")
 end
-ThemeManager:SetFolder("Himono Hub")
-SaveManager:SetFolder("Himono Hub/SailorPiece")
+ThemeManager:SetFolder("Himono")
+SaveManager:SetFolder("Himono/SailorPiece")
 SaveManager:BuildConfigSection(Tabs.Config)
 ThemeManager:ApplyToTab(Tabs.Config)
 Options.Lock_Type:SetValues(Modules.ArtifactConfig.Categories)
