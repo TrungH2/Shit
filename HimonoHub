@@ -1,1 +1,3815 @@
+-------------------------------------------------------------------------------
+--! json library
+--! cryptography library
+local a=2^32;local b=a-1;local function c(d,e)local f,g=0,1;while d~=0 or e~=0 do local h,i=d%2,e%2;local j=(h+i)%2;f=f+j*g;d=math.floor(d/2)e=math.floor(e/2)g=g*2 end;return f%a end;local function k(d,e,l,...)local m;if e then d=d%a;e=e%a;m=c(d,e)if l then m=k(m,l,...)end;return m elseif d then return d%a else return 0 end end;local function n(d,e,l,...)local m;if e then d=d%a;e=e%a;m=(d+e-c(d,e))/2;if l then m=n(m,l,...)end;return m elseif d then return d%a else return b end end;local function o(p)return b-p end;local function q(d,r)if r<0 then return lshift(d,-r)end;return math.floor(d%2^32/2^r)end;local function s(p,r)if r>31 or r<-31 then return 0 end;return q(p%a,r)end;local function lshift(d,r)if r<0 then return s(d,-r)end;return d*2^r%2^32 end;local function t(p,r)p=p%a;r=r%32;local u=n(p,2^r-1)return s(p,r)+lshift(u,32-r)end;local v={0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2}local function w(x)return string.gsub(x,".",function(l)return string.format("%02x",string.byte(l))end)end;local function y(z,A)local x=""for B=1,A do local C=z%256;x=string.char(C)..x;z=(z-C)/256 end;return x end;local function D(x,B)local A=0;for B=B,B+3 do A=A*256+string.byte(x,B)end;return A end;local function E(F,G)local H=64-(G+9)%64;G=y(8*G,8)F=F.."\128"..string.rep("\0",H)..G;assert(#F%64==0)return F end;local function I(J)J[1]=0x6a09e667;J[2]=0xbb67ae85;J[3]=0x3c6ef372;J[4]=0xa54ff53a;J[5]=0x510e527f;J[6]=0x9b05688c;J[7]=0x1f83d9ab;J[8]=0x5be0cd19;return J end;local function K(F,B,J)local L={}for M=1,16 do L[M]=D(F,B+(M-1)*4)end;for M=17,64 do local N=L[M-15]local O=k(t(N,7),t(N,18),s(N,3))N=L[M-2]L[M]=(L[M-16]+O+L[M-7]+k(t(N,17),t(N,19),s(N,10)))%a end;local d,e,l,P,Q,R,S,T=J[1],J[2],J[3],J[4],J[5],J[6],J[7],J[8]for B=1,64 do local O=k(t(d,2),t(d,13),t(d,22))local U=k(n(d,e),n(d,l),n(e,l))local V=(O+U)%a;local W=k(t(Q,6),t(Q,11),t(Q,25))local X=k(n(Q,R),n(o(Q),S))local Y=(T+W+X+v[B]+L[B])%a;T=S;S=R;R=Q;Q=(P+Y)%a;P=l;l=e;e=d;d=(Y+V)%a end;J[1]=(J[1]+d)%a;J[2]=(J[2]+e)%a;J[3]=(J[3]+l)%a;J[4]=(J[4]+P)%a;J[5]=(J[5]+Q)%a;J[6]=(J[6]+R)%a;J[7]=(J[7]+S)%a;J[8]=(J[8]+T)%a end;local function Z(F)F=E(F,#F)local J=I({})for B=1,#F,64 do K(F,B,J)end;return w(y(J[1],4)..y(J[2],4)..y(J[3],4)..y(J[4],4)..y(J[5],4)..y(J[6],4)..y(J[7],4)..y(J[8],4))end;local e;local l={["\\"]="\\",["\""]="\"",["\b"]="b",["\f"]="f",["\n"]="n",["\r"]="r",["\t"]="t"}local P={["/"]="/"}for Q,R in pairs(l)do P[R]=Q end;local S=function(T)return"\\"..(l[T]or string.format("u%04x",T:byte()))end;local B=function(M)return"null"end;local v=function(M,z)local _={}z=z or{}if z[M]then error("circular reference")end;z[M]=true;if rawget(M,1)~=nil or next(M)==nil then local A=0;for Q in pairs(M)do if type(Q)~="number"then error("invalid table: mixed or invalid key types")end;A=A+1 end;if A~=#M then error("invalid table: sparse array")end;for a0,R in ipairs(M)do table.insert(_,e(R,z))end;z[M]=nil;return"["..table.concat(_,",").."]"else for Q,R in pairs(M)do if type(Q)~="string"then error("invalid table: mixed or invalid key types")end;table.insert(_,e(Q,z)..":"..e(R,z))end;z[M]=nil;return"{"..table.concat(_,",").."}"end end;local g=function(M)return'"'..M:gsub('[%z\1-\31\\"]',S)..'"'end;local a1=function(M)if M~=M or M<=-math.huge or M>=math.huge then error("unexpected number value '"..tostring(M).."'")end;return string.format("%.14g",M)end;local j={["nil"]=B,["table"]=v,["string"]=g,["number"]=a1,["boolean"]=tostring}e=function(M,z)local x=type(M)local a2=j[x]if a2 then return a2(M,z)end;error("unexpected type '"..x.."'")end;local a3=function(M)return e(M)end;local a4;local N=function(...)local _={}for a0=1,select("#",...)do _[select(a0,...)]=true end;return _ end;local L=N(" ","\t","\r","\n")local p=N(" ","\t","\r","\n","]","}",",")local a5=N("\\","/",'"',"b","f","n","r","t","u")local m=N("true","false","null")local a6={["true"]=true,["false"]=false,["null"]=nil}local a7=function(a8,a9,aa,ab)for a0=a9,#a8 do if aa[a8:sub(a0,a0)]~=ab then return a0 end end;return#a8+1 end;local ac=function(a8,a9,J)local ad=1;local ae=1;for a0=1,a9-1 do ae=ae+1;if a8:sub(a0,a0)=="\n"then ad=ad+1;ae=1 end end;error(string.format("%s at line %d col %d",J,ad,ae))end;local af=function(A)local a2=math.floor;if A<=0x7f then return string.char(A)elseif A<=0x7ff then return string.char(a2(A/64)+192,A%64+128)elseif A<=0xffff then return string.char(a2(A/4096)+224,a2(A%4096/64)+128,A%64+128)elseif A<=0x10ffff then return string.char(a2(A/262144)+240,a2(A%262144/4096)+128,a2(A%4096/64)+128,A%64+128)end;error(string.format("invalid unicode codepoint '%x'",A))end;local ag=function(ah)local ai=tonumber(ah:sub(1,4),16)local aj=tonumber(ah:sub(7,10),16)if aj then return af((ai-0xd800)*0x400+aj-0xdc00+0x10000)else return af(ai)end end;local ak=function(a8,a0)local _=""local al=a0+1;local Q=al;while al<=#a8 do local am=a8:byte(al)if am<32 then ac(a8,al,"control character in string")elseif am==92 then _=_..a8:sub(Q,al-1)al=al+1;local T=a8:sub(al,al)if T=="u"then local an=a8:match("^[dD][89aAbB]%x%x\\u%x%x%x%x",al+1)or a8:match("^%x%x%x%x",al+1)or ac(a8,al-1,"invalid unicode escape in string")_=_..ag(an)al=al+#an else if not a5[T]then ac(a8,al-1,"invalid escape char '"..T.."' in string")end;_=_..P[T]end;Q=al+1 elseif am==34 then _=_..a8:sub(Q,al-1)return _,al+1 end;al=al+1 end;ac(a8,a0,"expected closing quote for string")end;local ao=function(a8,a0)local am=a7(a8,a0,p)local ah=a8:sub(a0,am-1)local A=tonumber(ah)if not A then ac(a8,a0,"invalid number '"..ah.."'")end;return A,am end;local ap=function(a8,a0)local am=a7(a8,a0,p)local aq=a8:sub(a0,am-1)if not m[aq]then ac(a8,a0,"invalid literal '"..aq.."'")end;return a6[aq],am end;local ar=function(a8,a0)local _={}local A=1;a0=a0+1;while 1 do local am;a0=a7(a8,a0,L,true)if a8:sub(a0,a0)=="]"then a0=a0+1;break end;am,a0=a4(a8,a0)_[A]=am;A=A+1;a0=a7(a8,a0,L,true)local as=a8:sub(a0,a0)a0=a0+1;if as=="]"then break end;if as~=","then ac(a8,a0,"expected ']' or ','")end end;return _,a0 end;local at=function(a8,a0)local _={}a0=a0+1;while 1 do local au,M;a0=a7(a8,a0,L,true)if a8:sub(a0,a0)=="}"then a0=a0+1;break end;if a8:sub(a0,a0)~='"'then ac(a8,a0,"expected string for key")end;au,a0=a4(a8,a0)a0=a7(a8,a0,L,true)if a8:sub(a0,a0)~=":"then ac(a8,a0,"expected ':' after key")end;a0=a7(a8,a0+1,L,true)M,a0=a4(a8,a0)_[au]=M;a0=a7(a8,a0,L,true)local as=a8:sub(a0,a0)a0=a0+1;if as=="}"then break end;if as~=","then ac(a8,a0,"expected '}' or ','")end end;return _,a0 end;local av={['"']=ak,["0"]=ao,["1"]=ao,["2"]=ao,["3"]=ao,["4"]=ao,["5"]=ao,["6"]=ao,["7"]=ao,["8"]=ao,["9"]=ao,["-"]=ao,["t"]=ap,["f"]=ap,["n"]=ap,["["]=ar,["{"]=at}a4=function(a8,a9)local as=a8:sub(a9,a9)local a2=av[as]if a2 then return a2(a8,a9)end;ac(a8,a9,"unexpected character '"..as.."'")end;local aw=function(a8)if type(a8)~="string"then error("expected argument of type string, got "..type(a8))end;local _,a9=a4(a8,a7(a8,1,L,true))a9=a7(a8,a9,L,true)if a9<=#a8 then ac(a8,a9,"trailing garbage")end;return _ end;
+local lEncode, lDecode, lDigest = a3, aw, Z;
+-------------------------------------------------------------------------------
+--! platoboost library
+local service = 23154;  -- your service id
+local secret = "7a148c26-b8f9-46d0-bcab-addd4b4d0134";
+local useNonce = true; 
+local onMessage = function(message) end;
+repeat task.wait(0.2) until game:IsLoaded();
+local requestSending = false;
+local fSetClipboard, fRequest = setclipboard or toclipboard or function() end, (type(syn) == 'table' and syn.request) or (type(http) == 'table' and http.request) or (type(fluxus) == 'table' and fluxus.request) or request or http_request
+local fStringChar, fToString, fStringSub, fOsTime, fMathRandom, fMathFloor, fGetHwid = string.char, tostring, string.sub, os.time, math.random, math.floor, function() local ok, res = pcall(function() return gethwid() end) if ok and type(res) == "string" and #res > 0 then return res end return tostring(game:GetService("Players").LocalPlayer.UserId) end
+local cachedLink, cachedTime = "", 0;
+local host = "https://api.platoboost.com";
+local hostOk, hostRes = pcall(function() return fRequest({Url = host .. "/public/connectivity", Method = "GET"}) end);
+if not hostOk or type(hostRes) ~= "table" or (hostRes.StatusCode ~= 200 and hostRes.StatusCode ~= 429) then host = "https://api.platoboost.net"; end
+function cacheLink()
+    if cachedTime + (10*60) < fOsTime() then
+        if not fRequest then return false, "No Request Function" end
+        local reqData = { Url = host .. "/public/start", Method = "POST", Body = lEncode({ service = service, identifier = lDigest(fGetHwid()) }), Headers = { ["Content-Type"] = "application/json" } }
+        local ok, response = pcall(function() return fRequest(reqData) end)
+        if not ok then return false, tostring(response) end
+        if not response then return false, "Empty response" end
+        if response.StatusCode == 200 then
+            local decoded = lDecode(response.Body);
+            if decoded.success == true then cachedLink = decoded.data.url; cachedTime = fOsTime(); return true, cachedLink;
+            else onMessage(decoded.message); return false, decoded.message; end
+        elseif response.StatusCode == 429 then return false, "rate limited"; end
+        return false, "Failed to cache";
+    else return true, cachedLink; end
+end
+pcall(cacheLink);
+local generateNonce = function() local str = "" for _ = 1, 16 do str = str .. fStringChar(fMathFloor(fMathRandom() * (122 - 97 + 1)) + 97) end return str end
+for _ = 1, 5 do local oNonce = generateNonce(); task.wait(0.1) if generateNonce() == oNonce then error("nonce error"); end end
+local copyLink = function() local success, str = cacheLink(); if success then pcall(function() fSetClipboard(str) end) return str, nil end return "", str end
+local redeemKey = function(key)
+    local nonce = generateNonce();
+    local endpoint = host .. "/public/redeem/" .. fToString(service);
+    local body = { identifier = lDigest(fGetHwid()), key = key }
+    if useNonce then body.nonce = nonce; end
+    if not fRequest then return false, "No fRequest" end
+    local reqData = { Url = endpoint, Method = "POST", Body = lEncode(body), Headers = { ["Content-Type"] = "application/json" } }
+    local ok, response = pcall(function() return fRequest(reqData) end)
+    if not ok then return false, tostring(response) end
+    if not response then return false, "Empty response" end
+    if response.StatusCode == 200 then
+        local decoded = lDecode(response.Body);
+        if decoded.success == true then
+            if decoded.data.valid == true then
+                if useNonce then return decoded.data.hash == lDigest("true" .. "-" .. nonce .. "-" .. secret) else return true; end
+            else return false; end
+        else return false; end
+    else return false; end
+end
+local verifyKey = function(key)
+    if requestSending == true then return false; else requestSending = true; end
+    local nonce = generateNonce();
+    local endpoint = host .. "/public/whitelist/" .. fToString(service) .. "?identifier=" .. lDigest(fGetHwid()) .. "&key=" .. key;
+    if useNonce then endpoint = endpoint .. "&nonce=" .. nonce; end
+    if not fRequest then requestSending = false; return false, "No fRequest" end
+    local reqData = { Url = endpoint, Method = "GET" }
+    local ok, response = pcall(function() return fRequest(reqData) end)
+    if not ok then requestSending = false; return false, tostring(response) end
+    if not response then requestSending = false; return false, "Empty Response" end
+    requestSending = false;
+    if response.StatusCode == 200 then
+        local decoded = lDecode(response.Body);
+        if decoded.success == true then
+            if decoded.data.valid == true then
+                if useNonce then return decoded.data.hash == lDigest("true" .. "-" .. nonce .. "-" .. secret) else return true; end
+            else
+                if fStringSub(key, 1, 4) == "KEY_" then return redeemKey(key); else return false; end
+            end
+        else return false; end
+    else return false; end
+end
 
+-- =============================================
+--     PLATOBOOST UI KEY SYSTEM (Tích hợp)
+-- =============================================
+local isWhitelisted = verifyKey("")
+if not isWhitelisted then
+    local checkBindable = Instance.new("BindableEvent")
+    local CoreGui = game:GetService("CoreGui")
+    local sg = Instance.new("ScreenGui")
+    sg.Name = "HimonoPlatoboostKey"
+    sg.IgnoreGuiInset = true 
+    
+    local successParent = pcall(function()
+        sg.Parent = (gethui and gethui()) or CoreGui
+    end)
+    if not successParent then
+        sg.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+    end
+    
+    local shadow = Instance.new("Frame")
+    shadow.Size = UDim2.new(1, 0, 1, 0)
+    shadow.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    shadow.BackgroundTransparency = 0.5
+    shadow.Parent = sg
+    
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0, 420, 0, 260)
+    frame.Position = UDim2.new(0.5, -210, 0.5, -130)
+    frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    frame.BorderSizePixel = 0
+    frame.Parent = sg
+    Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
+    
+    local title = Instance.new("TextLabel")
+    title.Size = UDim2.new(1, 0, 0, 50)
+    title.BackgroundTransparency = 1
+    title.Text = "Himono Hub"
+    title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    title.Font = Enum.Font.GothamBold
+    title.TextSize = 24
+    title.Parent = frame
+    
+    local closeBtn = Instance.new("TextButton")
+    closeBtn.Size = UDim2.new(0, 30, 0, 30)
+    closeBtn.Position = UDim2.new(1, -40, 0, 10)
+    closeBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    closeBtn.Text = "X"
+    closeBtn.TextColor3 = Color3.fromRGB(200, 100, 100)
+    closeBtn.Font = Enum.Font.GothamBold
+    closeBtn.TextSize = 14
+    closeBtn.Parent = frame
+    Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 6)
+    
+    local subTitle = Instance.new("TextLabel")
+    subTitle.Size = UDim2.new(1, 0, 0, 20)
+    subTitle.Position = UDim2.new(0, 0, 0, 45)
+    subTitle.BackgroundTransparency = 1
+    subTitle.Text = "Get a device whitelist key to unlock the hub"
+    subTitle.TextColor3 = Color3.fromRGB(170, 170, 170)
+    subTitle.Font = Enum.Font.Gotham
+    subTitle.TextSize = 13
+    subTitle.Parent = frame
+    
+    local getBtn = Instance.new("TextButton")
+    getBtn.Size = UDim2.new(0, 160, 0, 40)
+    getBtn.Position = UDim2.new(0.5, -170, 0, 90)
+    getBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    getBtn.Text = "Copy Link"
+    getBtn.TextColor3 = Color3.fromRGB(240, 240, 240)
+    getBtn.Font = Enum.Font.GothamBold
+    getBtn.TextSize = 14
+    getBtn.Parent = frame
+    Instance.new("UICorner", getBtn).CornerRadius = UDim.new(0, 6)
+    local stroke1 = Instance.new("UIStroke", getBtn)
+    stroke1.Color = Color3.fromRGB(60, 60, 60)
+    stroke1.Thickness = 1
+    
+    local checkBtn = Instance.new("TextButton")
+    checkBtn.Size = UDim2.new(0, 160, 0, 40)
+    checkBtn.Position = UDim2.new(0.5, 10, 0, 90)
+    checkBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 255)
+    checkBtn.Text = "Check Whitelist"
+    checkBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    checkBtn.Font = Enum.Font.GothamBold
+    checkBtn.TextSize = 14
+    checkBtn.Parent = frame
+    Instance.new("UICorner", checkBtn).CornerRadius = UDim.new(0, 6)
+    
+    local box = Instance.new("TextBox")
+    box.Size = UDim2.new(0, 340, 0, 45)
+    box.Position = UDim2.new(0.5, -170, 0, 150)
+    box.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+    box.Text = ""
+    box.PlaceholderText = "Paste key here or click Check Whitelist..."
+    box.PlaceholderColor3 = Color3.fromRGB(100, 100, 100)
+    box.TextColor3 = Color3.fromRGB(255, 255, 255)
+    box.Font = Enum.Font.Gotham
+    box.TextSize = 13
+    box.Parent = frame
+    Instance.new("UICorner", box).CornerRadius = UDim.new(0, 6)
+    local stroke2 = Instance.new("UIStroke", box)
+    stroke2.Color = Color3.fromRGB(40, 40, 40)
+    stroke2.Thickness = 1
+    
+    local notif = Instance.new("TextLabel")
+    notif.Size = UDim2.new(1, 0, 0, 20)
+    notif.Position = UDim2.new(0, 0, 0, 210)
+    notif.BackgroundTransparency = 1
+    notif.Text = ""
+    notif.TextColor3 = Color3.fromRGB(255, 100, 100)
+    notif.Font = Enum.Font.GothamBold
+    notif.TextSize = 13
+    notif.Parent = frame
+    
+    getBtn.MouseButton1Click:Connect(function()
+        local link, errStr = copyLink()
+        if link and link ~= "" then
+            getBtn.Text = "Link Copied!"
+            box.Text = link
+            notif.Text = "Link Copied (Also pasted in box!)"
+            notif.TextColor3 = Color3.fromRGB(150, 255, 150)
+            task.wait(2)
+            getBtn.Text = "Copy Link"
+        else
+            getBtn.Text = "Failed!"
+            notif.Text = errStr or "Unknown Error"
+            notif.TextColor3 = Color3.fromRGB(255, 100, 100)
+            task.wait(2)
+            getBtn.Text = "Copy Link"
+        end
+    end)
+    
+    checkBtn.MouseButton1Click:Connect(function()
+        local k = box.Text:gsub(" ", "")
+        if k:sub(1, 4) == "http" then k = "" end
+        checkBtn.Text = "Verifying..."
+        local success, errStr = verifyKey(k)
+        if success then
+            checkBtn.Text = "Verified!"
+            checkBtn.BackgroundColor3 = Color3.fromRGB(40, 167, 69)
+            notif.Text = "Successfully Authed! Loading script..."
+            notif.TextColor3 = Color3.fromRGB(40, 167, 69)
+            task.wait(1)
+            sg:Destroy()
+            checkBindable:Fire()
+        else
+            checkBtn.Text = "Invalid Data"
+            notif.Text = errStr or "Key is invalid or Executor error."
+            task.wait(2)
+            checkBtn.Text = "Check Whitelist"
+        end
+    end)
+    
+    closeBtn.MouseButton1Click:Connect(function()
+        sg:Destroy()
+    end)
+    
+    checkBindable.Event:Wait()
+end
+
+-- =============================================
+--         HIMONO HUB MAIN SCRIPT
+--         UI: Rayfield Library
+--         Game: Sailor Piece (Roblox)
+-- =============================================
+
+local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
+
+-- ============ SERVICES ============
+local RS           = game:GetService("ReplicatedStorage")
+local Players      = game:GetService("Players")
+local RunService   = game:GetService("RunService")
+local TweenSvc     = game:GetService("TweenService")
+local TeleportSvc  = game:GetService("TeleportService")
+local HttpSvc      = game:GetService("HttpService")
+local Lighting     = game:GetService("Lighting")
+local GuiService   = game:GetService("GuiService")
+local UIS          = game:GetService("UserInputService")
+local VirtualUser  = game:GetService("VirtualUser")
+local HttpService  = game:GetService("HttpService")
+
+local Plr  = Players.LocalPlayer
+local Char = Plr.Character or Plr.CharacterAdded:Wait()
+local PGui = Plr:WaitForChild("PlayerGui")
+
+-- ============ EXECUTOR SUPPORT ============
+cloneref = (type(cloneref) == "function") and cloneref or function(...) return ... end
+getconnections = (type(getconnections) == "function") and getconnections or (type(get_signal_cons) == "function") and get_signal_cons or nil
+
+local Support = {
+    Webhook    = (typeof(request) == "function" or typeof(http_request) == "function"),
+    Clipboard  = (typeof(setclipboard) == "function"),
+    FileIO     = (typeof(writefile) == "function" and typeof(isfile) == "function"),
+    QueueTP    = (typeof(queue_on_teleport) == "function"),
+    Connections= (typeof(getconnections) == "function"),
+    FPS        = (typeof(setfpscap) == "function"),
+    Proximity  = (typeof(fireproximityprompt) == "function"),
+}
+
+-- ============ HELPERS ============
+local function GetSafeModule(parent, name)
+    local obj = parent:FindFirstChild(name)
+    if obj and obj:IsA("ModuleScript") then
+        local ok, result = pcall(require, obj)
+        if ok then return result end
+    end
+    return nil
+end
+
+local function GetRemote(parent, pathString)
+    local current = parent
+    for _, name in ipairs(pathString:split(".")) do
+        if not current then return nil end
+        current = current:FindFirstChild(name)
+    end
+    return current
+end
+
+-- ============ REMOTES (Source-accurate) ============
+local Remotes = {
+    SettingsToggle = GetRemote(RS, "RemoteEvents.SettingsToggle"),
+    SettingsSync   = GetRemote(RS, "RemoteEvents.SettingsSync"),
+    UseCode        = GetRemote(RS, "RemoteEvents.CodeRedeem"),
+
+    M1          = GetRemote(RS, "CombatSystem.Remotes.RequestHit"),
+    EquipWeapon = GetRemote(RS, "Remotes.EquipWeapon"),
+    UseSkill    = GetRemote(RS, "AbilitySystem.Remotes.RequestAbility"),
+    UseFruit    = GetRemote(RS, "RemoteEvents.FruitPowerRemote"),
+    QuestAccept = GetRemote(RS, "RemoteEvents.QuestAccept"),
+    QuestAbandon= GetRemote(RS, "RemoteEvents.QuestAbandon"),
+
+    UseItem     = GetRemote(RS, "Remotes.UseItem"),
+    SlimeCraft  = GetRemote(RS, "Remotes.RequestSlimeCraft"),
+    GrailCraft  = GetRemote(RS, "Remotes.RequestGrailCraft"),
+
+    RerollSingleStat = GetRemote(RS, "Remotes.RerollSingleStat"),
+    SkillTreeUpgrade = GetRemote(RS, "RemoteEvents.SkillTreeUpgrade"),
+    Enchant     = GetRemote(RS, "Remotes.EnchantAccessory"),
+    Blessing    = GetRemote(RS, "Remotes.BlessWeapon"),
+
+    ArtifactSync   = GetRemote(RS, "RemoteEvents.ArtifactDataSync"),
+    ArtifactClaim  = GetRemote(RS, "RemoteEvents.ArtifactMilestoneClaimReward"),
+    MassDelete     = GetRemote(RS, "RemoteEvents.ArtifactMassDeleteByUUIDs"),
+    MassUpgrade    = GetRemote(RS, "RemoteEvents.ArtifactMassUpgrade"),
+    ArtifactLock   = GetRemote(RS, "RemoteEvents.ArtifactLock"),
+    ArtifactUnequip= GetRemote(RS, "RemoteEvents.ArtifactUnequip"),
+    ArtifactEquip  = GetRemote(RS, "RemoteEvents.ArtifactEquip"),
+
+    Roll_Trait      = GetRemote(RS, "RemoteEvents.TraitReroll"),
+    TraitAutoSkip   = GetRemote(RS, "RemoteEvents.TraitUpdateAutoSkip"),
+    TraitConfirm    = GetRemote(RS, "RemoteEvents.TraitConfirm"),
+    SpecPassiveReroll = GetRemote(RS, "RemoteEvents.SpecPassiveReroll"),
+
+    ArmHaki       = GetRemote(RS, "RemoteEvents.HakiRemote"),
+    ObserHaki     = GetRemote(RS, "RemoteEvents.ObservationHakiRemote"),
+    ConquerorHaki = GetRemote(RS, "Remotes.ConquerorHakiRemote"),
+
+    TP_Portal   = GetRemote(RS, "Remotes.TeleportToPortal"),
+    OpenDungeon = GetRemote(RS, "Remotes.RequestDungeonPortal"),
+
+    EquipTitle    = GetRemote(RS, "RemoteEvents.TitleEquip"),
+    TitleUnequip  = GetRemote(RS, "RemoteEvents.TitleUnequip"),
+    EquipRune     = GetRemote(RS, "Remotes.EquipRune"),
+    LoadoutLoad   = GetRemote(RS, "RemoteEvents.LoadoutLoad"),
+    AddStat       = GetRemote(RS, "RemoteEvents.AllocateStat"),
+
+    OpenMerchant  = GetRemote(RS, "Remotes.MerchantRemotes.OpenMerchantUI"),
+    MerchantBuy   = GetRemote(RS, "Remotes.MerchantRemotes.PurchaseMerchantItem"),
+    StockUpdate   = GetRemote(RS, "Remotes.MerchantRemotes.MerchantStockUpdate"),
+
+    SummonBoss     = GetRemote(RS, "Remotes.RequestSummonBoss"),
+    JJKSummonBoss  = GetRemote(RS, "Remotes.RequestSpawnStrongestBoss"),
+    RimuruBoss     = GetRemote(RS, "RemoteEvents.RequestSpawnRimuru"),
+    AnosBoss       = GetRemote(RS, "Remotes.RequestSpawnAnosBoss"),
+    TrueAizenBoss  = GetRemote(RS, "RemoteEvents.RequestSpawnTrueAizen"),
+
+    ReqInventory   = GetRemote(RS, "Remotes.RequestInventory"),
+    Ascend         = GetRemote(RS, "RemoteEvents.RequestAscend"),
+    ReqAscend      = GetRemote(RS, "RemoteEvents.GetAscendData"),
+    CloseAscend    = GetRemote(RS, "RemoteEvents.CloseAscendUI"),
+
+    TradeRespond   = GetRemote(RS, "Remotes.TradeRemotes.RespondToRequest"),
+    TradeSend      = GetRemote(RS, "Remotes.TradeRemotes.SendTradeRequest"),
+    TradeAddItem   = GetRemote(RS, "Remotes.TradeRemotes.AddItemToTrade"),
+    TradeReady     = GetRemote(RS, "Remotes.TradeRemotes.SetReady"),
+    TradeConfirm   = GetRemote(RS, "Remotes.TradeRemotes.ConfirmTrade"),
+    TradeUpdated   = GetRemote(RS, "Remotes.TradeRemotes.TradeUpdated"),
+
+    HakiStateUpdate  = GetRemote(RS, "RemoteEvents.HakiStateUpdate"),
+    UpCurrency       = GetRemote(RS, "RemoteEvents.UpdateCurrency"),
+    UpInventory      = GetRemote(RS, "Remotes.UpdateInventory"),
+    UpPlayerStats    = GetRemote(RS, "RemoteEvents.UpdatePlayerStats"),
+    UpAscend         = GetRemote(RS, "RemoteEvents.AscendDataUpdate"),
+    UpStatReroll     = GetRemote(RS, "RemoteEvents.StatRerollUpdate"),
+    SpecPassiveUpdate= GetRemote(RS, "RemoteEvents.SpecPassiveDataUpdate"),
+    SpecPassiveSkip  = GetRemote(RS, "RemoteEvents.SpecPassiveUpdateAutoSkip"),
+    UpSkillTree      = GetRemote(RS, "RemoteEvents.SkillTreeUpdate"),
+    BossUIUpdate     = GetRemote(RS, "Remotes.BossUIUpdate"),
+    TitleSync        = GetRemote(RS, "RemoteEvents.TitleDataSync"),
+}
+
+-- ============ MODULES (read from game) ============
+-- FIX: dùng FindFirstChild để tránh crash nếu folder chưa tồn tại
+local RSModules = RS:FindFirstChild("Modules") or Instance.new("Folder")
+local Modules = {
+    BossConfig    = GetSafeModule(RSModules, "BossConfig") or {Bosses = {}},
+    TimedConfig   = GetSafeModule(RSModules, "TimedBossConfig"),
+    SummonConfig  = GetSafeModule(RSModules, "SummonableBossConfig"),
+    Merchant      = GetSafeModule(RSModules, "MerchantConfig") or {ITEMS = {}},
+    Title         = GetSafeModule(RSModules, "TitlesConfig") or {},
+    Quests        = GetSafeModule(RSModules, "QuestConfig") or {RepeatableQuests = {}, Questlines = {}},
+    WeaponClass   = GetSafeModule(RSModules, "WeaponClassification") or {Tools = {}},
+    Fruits        = GetSafeModule(RS:FindFirstChild("FruitPowerSystem") or game, "FruitPowerConfig") or {Powers = {}},
+    ArtifactConfig= GetSafeModule(RSModules, "ArtifactConfig"),
+    Stats         = GetSafeModule(RSModules, "StatRerollConfig"),
+    Codes         = GetSafeModule(RS, "CodesConfig") or {Codes = {}},
+    ItemRarity    = GetSafeModule(RSModules, "ItemRarityConfig"),
+    Trait         = GetSafeModule(RSModules, "TraitConfig") or {Traits = {}},
+    Race          = GetSafeModule(RSModules, "RaceConfig") or {Races = {}},
+    Clan          = GetSafeModule(RSModules, "ClanConfig") or {Clans = {}},
+    SpecPassive   = GetSafeModule(RSModules, "SpecPassiveConfig"),
+    SkillTree     = GetSafeModule(RSModules, "SkillTreeConfig") or {Branches = {}},
+}
+
+-- ============ WORKSPACE PATHS ============
+local PATH = {
+    Mobs = workspace:WaitForChild("NPCs", 10) or workspace:FindFirstChild("NPCs") or workspace:FindFirstChild("Mobs") or workspace,
+    InteractNPCs = workspace:WaitForChild("ServiceNPCs", 10) or workspace:FindFirstChild("ServiceNPCs") or Instance.new("Folder"),
+}
+
+-- ============ SHARED STATE ============
+local Shared = {
+    GlobalPrio = "FARM",
+    Cached = { Inv = {}, Accessories = {}, RawWeapCache = {Sword = {}, Melee = {}} },
+    Farm = true, Recovering = false, MovingIsland = false,
+    Island = "", Target = nil, KillTick = 0, TargetValid = false,
+    QuestNPC = "", MobIdx = 1, AllMobIdx = 1,
+    WeapRotationIdx = 1, ComboIdx = 1, ParsedCombo = {},
+    ActiveWeap = "", ArmHaki = false, BossTIMap = {},
+    InventorySynced = false, Stats = {}, Settings = {},
+    GemStats = {}, SkillTree = {Nodes = {}, SkillPoints = 0},
+    Passives = {}, SpecStatsSlider = {},
+    ArtifactSession = {Inventory = {}, Dust = 0, InvCount = 0},
+    UpBlacklist = {},
+    MerchantBusy = false, LocalMerchantTime = 0,
+    LastTimerTick = tick(), MerchantExecute = false,
+    FirstMerchantSync = false, CurrentStock = {},
+    LastM1 = 0, LastWRSwitch = 0,
+    LastSwitch = {Title = "", Rune = ""},
+    LastBuildSwitch = 0, LastDungeon = 0,
+    AltDamage = {}, AltActive = false, TradeState = {},
+}
+
+local SummonMap = {}
+
+-- ============ TABLES (populated from modules) ============
+local Tables = {
+    DiffList = {"Normal", "Medium", "Hard", "Extreme"},
+    MobList = {}, MiniBossList = {"ThiefBoss", "MonkeyBoss", "DesertBoss", "SnowBoss", "PandaMiniBoss"},
+    BossList = {}, AllBossList = {}, AllNPCList = {}, AllEntitiesList = {},
+    SummonList = {},
+    OtherSummonList = {"StrongestHistory", "StrongestToday", "Rimuru", "Anos", "TrueAizen"},
+    Weapon = {"Melee", "Sword", "Power"},
+    ManualWeaponClass = {["Invisible"] = "Power", ["Bomb"] = "Power", ["Quake"] = "Power"},
+    MerchantList = {}, Rarities = {"Common", "Rare", "Epic", "Legendary", "Mythical", "Secret", "Aura Crate", "Cosmetic Crate"},
+    CraftItemList = {"SlimeKey", "DivineGrail"},
+    UnlockedTitle = {}, TitleList = {}, BuildList = {"1","2","3","4","5","None"},
+    TraitList = {}, RaceList = {}, ClanList = {},
+    RarityWeight = {["Secret"]=1,["Mythical"]=2,["Legendary"]=3,["Epic"]=4,["Rare"]=5,["Uncommon"]=6,["Common"]=7},
+    RuneList = {"None"}, SpecPassive = {},
+    GemStat = (Modules.Stats and Modules.Stats.StatKeys) or {},
+    GemRank = (Modules.Stats and Modules.Stats.RankOrder) or {},
+    OwnedWeapon = {}, AllOwnedWeapons = {}, OwnedAccessory = {},
+    OwnedItem = {},
+    IslandList = {"Starter","Jungle","Desert","Snow","Sailor","Shibuya","HuecoMundo","Boss","Dungeon","Shinjuku","Valentine","Slime","Academy","Judgement","SoulSociety"},
+    NPC_QuestList = {"DungeonUnlock", "SlimeKeyUnlock"},
+    NPC_MiscList = {"Artifacts","Blessing","Enchant","SkillTree","Cupid","ArmHaki","Observation","Conqueror"},
+    DungeonList = {"CidDungeon", "RuneDungeon", "DoubleDungeon", "BossRush"},
+    NPC_MovesetList = {}, NPC_MasteryList = {}, MobToIsland = {},
+    QuestlineList = {},
+}
+
+-- Populate boss lists from modules
+if Modules.TimedConfig and Modules.TimedConfig.Bosses then
+    for _, data in pairs(Modules.TimedConfig.Bosses) do
+        table.insert(Tables.BossList, data.displayName)
+        local tpName = data.spawnLocation:gsub(" Island",""):gsub(" Station","")
+        if data.spawnLocation == "Hueco Mundo Island" then tpName = "HuecoMundo" end
+        if data.spawnLocation == "Judgement Island" then tpName = "Judgement" end
+        Shared.BossTIMap[data.displayName] = tpName
+    end
+    table.sort(Tables.BossList)
+end
+
+if Modules.SummonConfig and Modules.SummonConfig.Bosses then
+    for _, data in pairs(Modules.SummonConfig.Bosses) do
+        table.insert(Tables.SummonList, data.displayName)
+        SummonMap[data.displayName] = data.bossId
+    end
+    table.sort(Tables.SummonList)
+end
+
+for bossName, _ in pairs(Modules.BossConfig.Bosses) do
+    table.insert(Tables.AllBossList, bossName:gsub("Boss$", ""))
+end
+table.sort(Tables.AllBossList)
+
+for itemName in pairs(Modules.Merchant.ITEMS or {}) do
+    table.insert(Tables.MerchantList, itemName)
+end
+
+-- Populate traits/races/clans from modules
+for name, _ in pairs(Modules.Trait.Traits) do table.insert(Tables.TraitList, name) end
+table.sort(Tables.TraitList, function(a,b)
+    local ra = Tables.RarityWeight[Modules.Trait.Traits[a].Rarity] or 99
+    local rb = Tables.RarityWeight[Modules.Trait.Traits[b].Rarity] or 99
+    return ra ~= rb and ra < rb or a < b
+end)
+
+for name, _ in pairs(Modules.Race.Races) do table.insert(Tables.RaceList, name) end
+table.sort(Tables.RaceList, function(a,b)
+    local ra = Tables.RarityWeight[Modules.Race.Races[a].rarity] or 99
+    local rb = Tables.RarityWeight[Modules.Race.Races[b].rarity] or 99
+    return ra ~= rb and ra < rb or a < b
+end)
+
+for name, _ in pairs(Modules.Clan.Clans) do table.insert(Tables.ClanList, name) end
+table.sort(Tables.ClanList, function(a,b)
+    local ra = Tables.RarityWeight[Modules.Clan.Clans[a].rarity] or 99
+    local rb = Tables.RarityWeight[Modules.Clan.Clans[b].rarity] or 99
+    return ra ~= rb and ra < rb or a < b
+end)
+
+if Modules.SpecPassive and Modules.SpecPassive.Passives then
+    for name, _ in pairs(Modules.SpecPassive.Passives) do table.insert(Tables.SpecPassive, name) end
+    table.sort(Tables.SpecPassive)
+end
+
+for k, _ in pairs(Modules.Quests.Questlines or {}) do table.insert(Tables.QuestlineList, k) end
+table.sort(Tables.QuestlineList)
+
+pcall(function() for _, v in ipairs(PATH.InteractNPCs:GetChildren()) do table.insert(Tables.AllNPCList, v.Name) end end)
+
+-- Title list from module
+local SortedTitleList = (Modules.Title.GetSortedTitleIds and Modules.Title:GetSortedTitleIds()) or {}
+for _, v in ipairs(SortedTitleList) do table.insert(Tables.TitleList, v) end
+
+-- ============ ISLAND CRYSTALS ============
+local IslandCrystals = {
+    ["Starter"]     = workspace:FindFirstChild("StarterIsland") and workspace.StarterIsland:FindFirstChild("SpawnPointCrystal_Starter"),
+    ["Jungle"]      = workspace:FindFirstChild("JungleIsland") and workspace.JungleIsland:FindFirstChild("SpawnPointCrystal_Jungle"),
+    ["Desert"]      = workspace:FindFirstChild("DesertIsland") and workspace.DesertIsland:FindFirstChild("SpawnPointCrystal_Desert"),
+    ["Snow"]        = workspace:FindFirstChild("SnowIsland") and workspace.SnowIsland:FindFirstChild("SpawnPointCrystal_Snow"),
+    ["Sailor"]      = workspace:FindFirstChild("SailorIsland") and workspace.SailorIsland:FindFirstChild("SpawnPointCrystal_Sailor"),
+    ["Shibuya"]     = workspace:FindFirstChild("ShibuyaStation") and workspace.ShibuyaStation:FindFirstChild("SpawnPointCrystal_Shibuya"),
+    ["HuecoMundo"]  = workspace:FindFirstChild("HuecoMundo") and workspace.HuecoMundo:FindFirstChild("SpawnPointCrystal_HuecoMundo"),
+    ["Boss"]        = workspace:FindFirstChild("BossIsland") and workspace.BossIsland:FindFirstChild("SpawnPointCrystal_Boss"),
+    ["Dungeon"]     = workspace:FindFirstChild("Main Temple") and workspace["Main Temple"]:FindFirstChild("SpawnPointCrystal_Dungeon"),
+    ["Shinjuku"]    = workspace:FindFirstChild("ShinjukuIsland") and workspace.ShinjukuIsland:FindFirstChild("SpawnPointCrystal_Shinjuku"),
+    ["Valentine"]   = workspace:FindFirstChild("ValentineIsland") and workspace.ValentineIsland:FindFirstChild("SpawnPointCrystal_Valentine"),
+    ["Slime"]       = workspace:FindFirstChild("SlimeIsland") and workspace.SlimeIsland:FindFirstChild("SpawnPointCrystal_Slime"),
+    ["Academy"]     = workspace:FindFirstChild("AcademyIsland") and workspace.AcademyIsland:FindFirstChild("SpawnPointCrystal_Academy"),
+    ["Judgement"]   = workspace:FindFirstChild("JudgementIsland") and workspace.JudgementIsland:FindFirstChild("SpawnPointCrystal_Judgement"),
+    ["SoulSociety"] = workspace:FindFirstChild("SoulSocietyIsland") and workspace.SoulSocietyIsland:FindFirstChild("SpawnPointCrystal_SoulSociety"),
+}
+
+-- ============ ALIAS VARIABLES (used by UI dropdowns) ============
+local ISLANDS = Tables.IslandList
+local DIFFICULTIES = Tables.DiffList
+local DUNGEON_DIFFS = Tables.DiffList
+local BOSSES = Tables.AllBossList
+local SHOP_ITEMS = Tables.MerchantList
+local TRAITS = Tables.TraitList
+local RACES = Tables.RaceList
+local CLANS = Tables.ClanList
+local NO_DIFF_BOSS = {["SaberBoss"] = true, ["QinShiBoss"] = true, ["IchigoBoss"] = true}
+
+local QUEST_NPC_MAP = {}
+for npcId, questData in pairs(Modules.Quests.RepeatableQuests or {}) do
+    local recLvl = questData.recommendedLevel or 0
+    local island = "Starter"
+    pcall(function()
+        local npc = PATH.InteractNPCs:FindFirstChild(npcId)
+        if npc then
+            local npcPos = npc:GetPivot().Position
+            local minDist = math.huge
+            for islandName, crystal in pairs(IslandCrystals) do
+                if crystal then
+                    local dist = (npcPos - crystal:GetPivot().Position).Magnitude
+                    if dist < minDist then
+                        minDist = dist
+                        island = islandName
+                    end
+                end
+            end
+        end
+    end)
+    table.insert(QUEST_NPC_MAP, {npc = npcId, island = island, minLvl = recLvl, maxLvl = recLvl + 200})
+end
+table.sort(QUEST_NPC_MAP, function(a,b) return a.minLvl < b.minLvl end)
+
+local FARM_ISLANDS_ENDGAME_FIRST = {
+    "SoulSociety", "Judgement", "Academy", "Slime", "Valentine",
+    "Shinjuku", "HuecoMundo", "Shibuya", "Snow", "Desert", "Jungle", "Starter",
+}
+
+local function getIslandForLevel(lvl)
+    for i = #QUEST_NPC_MAP, 1, -1 do
+        if lvl >= QUEST_NPC_MAP[i].minLvl then return QUEST_NPC_MAP[i].island end
+    end
+    return "Starter"
+end
+
+local function getQuestNPCForLevel(lvl)
+    for i = #QUEST_NPC_MAP, 1, -1 do
+        if lvl >= QUEST_NPC_MAP[i].minLvl then return QUEST_NPC_MAP[i].npc, QUEST_NPC_MAP[i].island end
+    end
+    return "QuestNPC1", "Starter"
+end
+
+-- ============ EVENT LISTENERS (sync from server) ============
+if Remotes.SettingsSync then
+    Remotes.SettingsSync.OnClientEvent:Connect(function(data)
+        Shared.Settings = data
+    end)
+end
+
+if Remotes.UpInventory then
+    Remotes.UpInventory.OnClientEvent:Connect(function(category, data)
+        Shared.InventorySynced = true
+        if category == "Items" then
+            Shared.Cached.Inv = data or {}
+            table.clear(Tables.OwnedItem)
+            for _, item in pairs(data) do
+                if not table.find(Tables.OwnedItem, item.name) then
+                    table.insert(Tables.OwnedItem, item.name)
+                end
+            end
+            table.sort(Tables.OwnedItem)
+        elseif category == "Runes" then
+            table.clear(Tables.RuneList)
+            table.insert(Tables.RuneList, "None")
+            for name, _ in pairs(data) do table.insert(Tables.RuneList, name) end
+            table.sort(Tables.RuneList)
+        elseif category == "Accessories" then
+            table.clear(Shared.Cached.Accessories)
+            if type(data) == "table" then
+                for _, accInfo in ipairs(data) do
+                    if accInfo.name and accInfo.quantity then
+                        Shared.Cached.Accessories[accInfo.name] = accInfo.quantity
+                    end
+                end
+            end
+            table.clear(Tables.OwnedAccessory)
+            local processed = {}
+            for _, item in ipairs(data) do
+                if (item.enchantLevel or 0) < 10 and not processed[item.name] then
+                    table.insert(Tables.OwnedAccessory, item.name)
+                    processed[item.name] = true
+                end
+            end
+            table.sort(Tables.OwnedAccessory)
+        elseif category == "Sword" or category == "Melee" then
+            Shared.Cached.RawWeapCache[category] = data or {}
+            table.clear(Tables.OwnedWeapon)
+            local processed = {}
+            for _, cat in pairs({"Sword", "Melee"}) do
+                for _, item in ipairs(Shared.Cached.RawWeapCache[cat]) do
+                    if (item.blessingLevel or 0) < 10 and not processed[item.name] then
+                        table.insert(Tables.OwnedWeapon, item.name)
+                        processed[item.name] = true
+                    end
+                end
+            end
+            table.sort(Tables.OwnedWeapon)
+            table.clear(Tables.AllOwnedWeapons)
+            local allProcessed = {}
+            for _, cat in pairs({"Sword", "Melee"}) do
+                for _, item in ipairs(Shared.Cached.RawWeapCache[cat]) do
+                    if not allProcessed[item.name] then
+                        table.insert(Tables.AllOwnedWeapons, item.name)
+                        allProcessed[item.name] = true
+                    end
+                end
+            end
+            table.sort(Tables.AllOwnedWeapons)
+        end
+    end)
+end
+
+if Remotes.HakiStateUpdate then
+    Remotes.HakiStateUpdate.OnClientEvent:Connect(function(arg1, arg2)
+        if arg1 == false then Shared.ArmHaki = false; return end
+        if arg1 == Plr then Shared.ArmHaki = arg2 end
+    end)
+end
+
+if Remotes.ArtifactSync then
+    Remotes.ArtifactSync.OnClientEvent:Connect(function(data)
+        Shared.ArtifactSession.Inventory = data.Inventory
+        Shared.ArtifactSession.Dust = data.Dust
+    end)
+end
+
+if Remotes.UpSkillTree then
+    Remotes.UpSkillTree.OnClientEvent:Connect(function(data)
+        if data then
+            Shared.SkillTree.Nodes = data.Nodes or {}
+            Shared.SkillTree.SkillPoints = data.SkillPoints or 0
+        end
+    end)
+end
+
+if Remotes.TitleSync then
+    Remotes.TitleSync.OnClientEvent:Connect(function(data)
+        if data and data.unlocked then Tables.UnlockedTitle = data.unlocked end
+    end)
+end
+
+if Remotes.StockUpdate then
+    Remotes.StockUpdate.OnClientEvent:Connect(function(itemName, stockLeft)
+        Shared.CurrentStock[itemName] = tonumber(stockLeft)
+    end)
+end
+
+if Remotes.UpPlayerStats then
+    Remotes.UpPlayerStats.OnClientEvent:Connect(function(data)
+        if data then Shared.Stats = data end
+    end)
+end
+
+if Remotes.UpStatReroll then
+    Remotes.UpStatReroll.OnClientEvent:Connect(function(data)
+        if data then Shared.GemStats = data end
+    end)
+end
+
+if Remotes.SpecPassiveUpdate then
+    Remotes.SpecPassiveUpdate.OnClientEvent:Connect(function(data)
+        if data then Shared.Passives = data end
+    end)
+end
+
+if Remotes.TradeUpdated then
+    Remotes.TradeUpdated.OnClientEvent:Connect(function(data)
+        Shared.TradeState = data
+    end)
+end
+
+if Remotes.BossUIUpdate then
+    Remotes.BossUIUpdate.OnClientEvent:Connect(function(mode, data)
+        if mode == "DamageStats" and data.stats then
+            for _, info in pairs(data.stats) do
+                if info.player and info.player:IsA("Player") then
+                    Shared.AltDamage[info.player.Name] = tonumber(info.percent) or 0
+                end
+            end
+        end
+    end)
+end
+
+PATH.Mobs.ChildRemoved:Connect(function(child)
+    if child:IsA("Model") and child.Name:lower():find("boss") then
+        table.clear(Shared.AltDamage)
+        Shared.AltActive = false
+    end
+end)
+
+-- ============ THREAD MANAGER ============
+local Flags = {}
+
+local function Thread(featurePath, featureFunc, isEnabled, ...)
+    local pathParts = featurePath:split(".")
+    local currentTable = Flags
+    for i = 1, #pathParts - 1 do
+        local part = pathParts[i]
+        if not currentTable[part] then currentTable[part] = {} end
+        currentTable = currentTable[part]
+    end
+    local flagKey = pathParts[#pathParts]
+    local activeThread = currentTable[flagKey]
+    if isEnabled then
+        if not activeThread or coroutine.status(activeThread) == "dead" then
+            currentTable[flagKey] = task.spawn(featureFunc, ...)
+        end
+    else
+        if activeThread and typeof(activeThread) == "thread" then
+            task.cancel(activeThread)
+            currentTable[flagKey] = nil
+        end
+    end
+end
+
+local function SafeLoop(name, func)
+    return function()
+        local ok, err = pcall(func)
+        if not ok then
+            Rayfield:Notify({Title="Error", Content="[" .. name .. "]: " .. tostring(err), Duration=10})
+            warn("[HimonoHub] Error in [" .. name .. "]: " .. tostring(err))
+        end
+    end
+end
+
+-- ============ UTILITY FUNCTIONS ============
+local function GetCharacter()
+    local c = Plr.Character
+    return (c and c:FindFirstChild("HumanoidRootPart") and c:FindFirstChildOfClass("Humanoid")) and c or nil
+end
+
+local function GetNearestIsland(targetPos, npcName)
+    if npcName and Shared.BossTIMap[npcName] then return Shared.BossTIMap[npcName] end
+    local nearest, minDist = "Starter", math.huge
+    for islandName, crystal in pairs(IslandCrystals) do
+        if crystal then
+            local dist = (targetPos - crystal:GetPivot().Position).Magnitude
+            if dist < minDist then minDist = dist; nearest = islandName end
+        end
+    end
+    return nearest
+end
+
+local function Clean(str) return str:gsub("%s+",""):lower() end
+
+local function GetToolTypeFromModule(toolName)
+    local ct = Clean(toolName)
+    for k,v in pairs(Tables.ManualWeaponClass) do if Clean(k) == ct then return v end end
+    if Modules.WeaponClass and Modules.WeaponClass.Tools then
+        for k,v in pairs(Modules.WeaponClass.Tools) do if Clean(k) == ct then return v end end
+    end
+    if toolName:lower():find("fruit") then return "Power" end
+    return "Melee"
+end
+
+-- ============ KILL AURA HELPER ============
+local function GetNearestAuraTarget()
+    local char = GetCharacter()
+    local root = char and char:FindFirstChild("HumanoidRootPart")
+    if not root then return nil end
+    local myPos = root.Position
+    local maxRange = CFG.KillAuraRange or 100
+    local nearest, lastDist = nil, maxRange
+    for _, v in ipairs(PATH.Mobs:GetChildren()) do
+        if v:IsA("Model") then
+            local hum = v:FindFirstChildOfClass("Humanoid")
+            local npcRoot = v:FindFirstChild("HumanoidRootPart") or v:FindFirstChild("Root")
+            if hum and hum.Health > 0 and npcRoot then
+                local dist = (myPos - npcRoot.Position).Magnitude
+                if dist <= lastDist then nearest = v; lastDist = dist end
+            end
+        end
+    end
+    return nearest
+end
+
+-- ============ COMBO PARSER ============
+local function ParseComboPattern(raw)
+    local parsed = {}
+    if not raw or raw == "" then return parsed end
+    for item in string.gmatch(raw:upper():gsub("%s+", ""), "([^,>]+)") do
+        table.insert(parsed, item)
+    end
+    return parsed
+end
+
+-- ============ SESSION TRACKING ============
+local NewItemsBuffer = {}
+local Script_Start_Time = os.time()
+local StartStats = { Level = 0, Money = 0, Gems = 0, Bounty = 0 }
+pcall(function()
+    StartStats.Level = Plr.Data.Level.Value
+    StartStats.Money = Plr.Data.Money.Value
+    StartStats.Gems = Plr.Data.Gems.Value
+    StartStats.Bounty = (Plr:FindFirstChild("leaderstats") and Plr.leaderstats:FindFirstChild("Bounty") and Plr.leaderstats.Bounty.Value) or 0
+end)
+
+local function GetSessionTime()
+    local seconds = os.time() - Script_Start_Time
+    return string.format("%dh %02dm", math.floor(seconds / 3600), math.floor((seconds % 3600) / 60))
+end
+
+local function CommaFormat(n)
+    local s = tostring(n)
+    return s:reverse():gsub("%d%d%d", "%1,"):reverse():gsub("^,", "")
+end
+
+local function Abbreviate(n)
+    local abbrev = {{1e12, "T"}, {1e9, "B"}, {1e6, "M"}, {1e3, "K"}}
+    for _, v in ipairs(abbrev) do
+        if n >= v[1] then return string.format("%.1f%s", n / v[1], v[2]) end
+    end
+    return tostring(n)
+end
+
+-- ============ WEBHOOK HELPER ============
+local function PostToWebhook()
+    local url = CFG.WebhookURL or ""
+    if url == "" or not url:find("discord.com/api/webhooks/") then return end
+    pcall(function()
+        local data = Plr.Data
+        local lstats = Plr:FindFirstChild("leaderstats")
+        local bounty = lstats and lstats:FindFirstChild("Bounty") and lstats.Bounty.Value or 0
+        local desc = "### Sailor Piece\n"
+        desc = desc .. string.format("\n👤 **Player:** ||%s||\n", Plr.Name)
+        desc = desc .. string.format("📈 **Level:** `%s` (+%d)\n", CommaFormat(data.Level.Value), data.Level.Value - StartStats.Level)
+        desc = desc .. string.format("💰 💵 %s (+%s) | 💎 %s (+%s)\n",
+            Abbreviate(data.Money.Value), Abbreviate(data.Money.Value - StartStats.Money),
+            CommaFormat(data.Gems.Value), CommaFormat(data.Gems.Value - StartStats.Gems))
+        desc = desc .. string.format("☠️ **Bounty:** %s (+%s)\n", Abbreviate(bounty), Abbreviate(bounty - StartStats.Bounty))
+        if next(NewItemsBuffer) then
+            desc = desc .. "\n✨ **New Items**\n```"
+            for name, qty in pairs(NewItemsBuffer) do
+                desc = desc .. string.format("+ [%d] %s\n", qty, name)
+            end
+            desc = desc .. "```\n"
+        end
+        local payload = {
+            ["embeds"] = {{
+                ["description"] = desc,
+                ["color"] = tonumber("ffff77", 16),
+                ["footer"] = {["text"] = string.format("Himono Hub • Session: %s • %s", GetSessionTime(), os.date("%x %X"))}
+            }}
+        }
+        if CFG.WebhookPing and CFG.WebhookUID and CFG.WebhookUID ~= "" then
+            payload["content"] = "<@" .. CFG.WebhookUID .. ">"
+        end
+        local reqFn = (type(request) == "function" and request) or (type(http_request) == "function" and http_request)
+        if reqFn then
+            reqFn({ Url = url, Method = "POST", Headers = {["Content-Type"] = "application/json"}, Body = HttpService:JSONEncode(payload) })
+            NewItemsBuffer = {}
+        end
+    end)
+end
+
+local function IsValidTarget(npc)
+    if not npc or not npc.Parent then return false end
+    local hum = npc:FindFirstChildOfClass("Humanoid")
+    return hum and hum.Health > 0
+end
+
+local function IsBusy()
+    return Plr.Character and Plr.Character:FindFirstChildOfClass("ForceField") ~= nil
+end
+
+local function GetBestQuestNPC()
+    local QuestModule = Modules.Quests
+    local playerLevel = Plr.Data.Level.Value
+    local bestNPC, highestLevel = "QuestNPC1", -1
+    for npcId, questData in pairs(QuestModule.RepeatableQuests) do
+        local reqLevel = questData.recommendedLevel or 0
+        if playerLevel >= reqLevel and reqLevel > highestLevel then
+            highestLevel = reqLevel; bestNPC = npcId
+        end
+    end
+    return bestNPC
+end
+
+-- ============ ANTI-CHEAT HELPERS ============
+local function safeWait(baseTime, variance)
+    variance = variance or 0.3
+    local jitter = baseTime * variance * (math.random() * 2 - 1)
+    local final = math.max(0.02, baseTime + jitter)
+    task.wait(final)
+    return final
+end
+
+local function safeCall(fn, ...)
+    local args = {...}
+    local ok, err = pcall(function() fn(unpack(args)) end)
+    if not ok then warn("[HimonoHub] " .. tostring(err)) end
+    return ok
+end
+
+local function safeFireServer(remote, ...)
+    local args = {...}
+    local ok, err = pcall(function() remote:FireServer(unpack(args)) end)
+    return ok
+end
+
+local _lastCallTime = {}
+local function throttle(key, minInterval)
+    local now = tick()
+    if _lastCallTime[key] and (now - _lastCallTime[key]) < minInterval then return false end
+    _lastCallTime[key] = now
+    return true
+end
+
+-- ============ CONFIG ============
+local CFG = {
+    -- Farm
+    Position         = "Above",
+    Distance         = 5,
+    BypassTp         = true,
+    TweenSpeed       = 250,
+    AutoFarmLevel    = false,
+    AutoFarmQuest    = false,
+    SmartIslandFarm  = false,      -- Tự teleport đúng island theo level
+    FarmRange        = 150,
+    _currentFarmIsland = nil,
+    SelectedQuestNPC = "Auto",     -- Quest NPC được chọn (hoặc "Auto" theo level)
+    SelectedQuestIsland = nil,     -- Island của quest được chọn
+    MultiIsland      = "--",
+    DelayIsland      = 1.2,
+    StartMultiIsland = false,
+    -- Equip
+    AutoEquip        = false,
+    SelectedWeapon   = "--",
+    _weaponList      = {},
+    -- Combat
+    AutoAttack       = false,
+    AutoSkill        = false,
+    SkillSet         = {1, 2, 3, 4, 5},
+    SkillOnBoss      = false,
+    AttackDelay      = 0.08,
+    SkillDelay       = 0.12,
+    SkillWhileFarm   = false,
+    AttackWhileFarm  = false,
+    -- Haki
+    AutoHaki         = false,
+    AutoObs          = false,
+    AutoConq         = false,
+    -- OP
+    OPDelay          = 0.6,
+    AllMapFarming    = false,
+    OPFarming        = false,
+    ResetEvery5      = false,
+    -- Boss
+    SummonBossName   = "SaberBoss",
+    SummonDiff       = "Normal",
+    AutoSummonBoss   = false,
+    AutoWorldBoss    = false,
+    -- Reroll / Shop
+    TargetTrait      = "Celestial",
+    TargetRace       = "Warlord",
+    TargetClan       = "Alter",
+    AutoRaceReroll   = false,
+    AutoClanReroll   = false,
+    ShopItem         = "Rush Key",
+    AutoBuyMerch     = false,
+    -- Dungeon / Boss Rush
+    DungeonDiff      = "Medium",
+    RaidType         = "BossRush",     -- "InfiniteTower", "BossRush", "CidDungeon", "RuneDungeon", "DoubleDungeon"
+    AutoJoinDungeon  = false,
+    AutoDungeon      = false,
+    AutoRetry        = false,
+    AutoSelectDiff   = false,
+    DungeonAutoFarm  = false,
+    -- Infinite Tower
+    AutoInfTower     = false,
+    TowerAutoStart   = false,
+    TowerAutoReplay  = false,
+    TowerResetWave   = 50,
+    _towerWave       = 0,
+    -- State tracking
+    _isInDungeon     = false,      -- Đang trong dungeon/tower không
+    -- Shop
+    ShopAmt          = 1,
+    -- World / Timer Boss
+    SelectedWorldBoss = "YujiBoss",
+    -- Trait
+    AutoTraitReroll  = false,
+    TraitRerollDelay = 1.5,
+    -- Misc
+    ReduceCpu        = false,
+    AutoRejoin       = false,
+    AntiDetection    = false,
+    -- Quest Internal State
+    _hasActiveQuest  = false,
+    _questTarget     = nil,
+    _questNPC        = nil,
+    -- Anti-Cheat Internals
+    _hakiState       = false,
+    _obsState        = false,
+    _conqState       = false,
+    _isFarmingWorldBoss = false,
+    -- Webhook
+    WebhookURL = "", WebhookUID = "", WebhookPing = false,
+    WebhookDelay = 5, SendWebhook = false,
+    -- Artifact
+    ArtifactUpgrade = false, ArtifactUpgradeLimit = 12,
+    ArtifactLock = false, ArtifactLockMinSS = 3,
+    ArtifactDelete = false, ArtifactEquipBest = false, ArtifactMilestone = false,
+    -- Title/Rune/Build Switch
+    AutoTitle = false, DefaultTitle = "None", Title_Boss = "None",
+    AutoRune = false, DefaultRune = "None", Rune_Boss = "None",
+    AutoBuild = false, DefaultBuild = "None", Build_Boss = "None",
+    BossHPThreshold = 15,
+    -- Enchant/Blessing/Chest/Craft
+    AutoEnchant = false, SelectedEnchant = "",
+    AutoBlessing = false, SelectedBlessing = "",
+    AutoChest = false, SelectedChests = {},
+    AutoCraft = false, SelectedCraft = {},
+}
+
+-- ============ WEAPON DETECTION UTILITY ============
+local function getWeaponsFromBackpack()
+    local weapons = {}
+    pcall(function()
+        -- Tools trong Backpack (chưa equip)
+        for _, tool in ipairs(Plr.Backpack:GetChildren()) do
+            if tool:IsA("Tool") then
+                table.insert(weapons, tool.Name)
+            end
+        end
+        -- Tìm sâu hơn trong Backpack (nested)
+        for _, tool in ipairs(Plr.Backpack:GetDescendants()) do
+            if tool:IsA("Tool") then
+                table.insert(weapons, tool.Name)
+            end
+        end
+        local char = Plr.Character
+        if char then
+            for _, tool in ipairs(char:GetChildren()) do
+                if tool:IsA("Tool") then
+                    table.insert(weapons, tool.Name)
+                end
+            end
+        end
+        -- Fallback: tìm trong StarterPack
+        pcall(function()
+            for _, tool in ipairs(game:GetService("StarterPack"):GetChildren()) do
+                if tool:IsA("Tool") then
+                    table.insert(weapons, tool.Name)
+                end
+            end
+        end)
+    end)
+    -- Remove duplicates
+    local seen = {}
+    local unique = {}
+    for _, name in ipairs(weapons) do
+        if not seen[name] then
+            seen[name] = true
+            table.insert(unique, name)
+        end
+    end
+    return unique
+end
+
+local function equipWeapon(weaponName)
+    if not weaponName or weaponName == "--" then return end
+    pcall(function()
+        if Remotes.EquipWeapon then
+            Remotes.EquipWeapon:FireServer(weaponName)
+        else
+            local tool = Plr.Backpack:FindFirstChild(weaponName)
+            if tool and tool:IsA("Tool") then
+                local hum = Plr.Character and Plr.Character:FindFirstChildOfClass("Humanoid")
+                if hum then hum:EquipTool(tool) end
+            end
+        end
+    end)
+end
+
+local function unequipAllTools()
+    pcall(function()
+        local hum = Plr.Character and Plr.Character:FindFirstChildOfClass("Humanoid")
+        if hum then hum:UnequipTools() end
+    end)
+end
+
+-- ============ MOB DETECTION UTILITY ============
+-- Lấy level từ mob (từ name, attribute, hoặc UI)
+local function getMobLevel(mob)
+    if not mob then return 0 end
+    local lvl = 0
+    pcall(function()
+        -- Check Attribute
+        if mob:GetAttribute("Level") then
+            lvl = tonumber(mob:GetAttribute("Level")) or 0
+            return
+        end
+        -- Check IntValue/NumberValue tên "Level"
+        local lvlVal = mob:FindFirstChild("Level")
+        if lvlVal and (lvlVal:IsA("IntValue") or lvlVal:IsA("NumberValue")) then
+            lvl = lvlVal.Value or 0
+            return
+        end
+        -- Parse từ tên mob: "Mob Name [Lv. 50]" hoặc "Mob Lv50"
+        local name = mob.Name
+        local parsed = tonumber(string.match(name, "Lv%.?%s*(%d+)"))
+            or tonumber(string.match(name, "Level%s*(%d+)"))
+            or tonumber(string.match(name, "%[(%d+)%]"))
+        if parsed then lvl = parsed end
+        -- Check BillboardGui text trên đầu mob
+        if lvl == 0 then
+            for _, gui in ipairs(mob:GetDescendants()) do
+                if gui:IsA("TextLabel") then
+                    local num = tonumber(string.match(gui.Text, "Lv%.?%s*(%d+)"))
+                        or tonumber(string.match(gui.Text, "Level%s*(%d+)"))
+                    if num then lvl = num; break end
+                end
+            end
+        end
+    end)
+    return lvl
+end
+
+-- Lấy player level (deep search cho Sailor Piece)
+local function getPlayerLevel()
+    local lvl = 1
+    pcall(function()
+        -- 1. leaderstats (phổ biến nhất)
+        local ls = Plr:FindFirstChild("leaderstats")
+        if ls then
+            local v = ls:FindFirstChild("Level") or ls:FindFirstChild("Lv")
+            if v and v.Value and tonumber(v.Value) and tonumber(v.Value) > 0 then
+                lvl = tonumber(v.Value)
+                return
+            end
+        end
+        -- 2. PlayerData / Data (nested paths)
+        for _, containerName in ipairs({"PlayerData", "Data", "Stats", "PlayerStats", "SaveData"}) do
+            local container = Plr:FindFirstChild(containerName)
+            if container then
+                -- Direct child
+                local v = container:FindFirstChild("Level") or container:FindFirstChild("Lv")
+                if v and v.Value and tonumber(v.Value) and tonumber(v.Value) > 0 then
+                    lvl = tonumber(v.Value)
+                    return
+                end
+                -- Deep search trong container
+                for _, desc in ipairs(container:GetDescendants()) do
+                    if (desc:IsA("IntValue") or desc:IsA("NumberValue") or desc:IsA("StringValue")) then
+                        if desc.Name == "Level" or desc.Name == "Lv" or desc.Name == "PlayerLevel" then
+                            local val = tonumber(desc.Value)
+                            if val and val > 0 then
+                                lvl = val
+                                return
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        -- 3. Attribute trên player
+        local attrLvl = Plr:GetAttribute("Level") or Plr:GetAttribute("Lv") or Plr:GetAttribute("PlayerLevel")
+        if attrLvl and tonumber(attrLvl) and tonumber(attrLvl) > 0 then
+            lvl = tonumber(attrLvl)
+            return
+        end
+        local _char = Plr.Character
+        if _char then
+            local charAttr = _char:GetAttribute("Level") or _char:GetAttribute("Lv")
+            if charAttr and tonumber(charAttr) and tonumber(charAttr) > 0 then
+                lvl = tonumber(charAttr)
+                return
+            end
+        end
+        -- 5. Deep search toàn bộ player descendants
+        for _, desc in ipairs(Plr:GetDescendants()) do
+            if (desc:IsA("IntValue") or desc:IsA("NumberValue")) and 
+               (desc.Name == "Level" or desc.Name == "Lv") then
+                local val = tonumber(desc.Value)
+                if val and val > 0 then
+                    lvl = val
+                    return
+                end
+            end
+        end
+        -- 6. Fallback: Parse từ GUI (tìm text chứa "Lv" hoặc "Level")
+        pcall(function()
+            for _, gui in ipairs(Plr.PlayerGui:GetDescendants()) do
+                if gui:IsA("TextLabel") and gui.Visible then
+                    local txt = gui.Text
+                    local num = tonumber(string.match(txt, "Lv%.?%s*(%d+)"))
+                        or tonumber(string.match(txt, "Level%s*(%d+)"))
+                    if num and num > 0 and num < 99999 then
+                        lvl = num
+                        return
+                    end
+                end
+            end
+        end)
+    end)
+    return lvl
+end
+
+-- Tìm mob phù hợp level
+local function findMobForLevel(maxRange)
+    maxRange = maxRange or CFG.FarmRange
+    local best, bestDist = nil, math.huge
+    local playerLvl = getPlayerLevel()
+    
+    -- Ưu tiên tìm trong Mobs folder
+    local folders = {}
+    for _, name in ipairs({"Mobs", "NPCs", "Enemies", "Monsters"}) do
+        local f = workspace:FindFirstChild(name)
+        if f then table.insert(folders, f) end
+    end
+    
+    local function scanFolder(folder)
+        for _, obj in ipairs(folder:GetChildren()) do
+            if obj:IsA("Model") and obj ~= Plr.Character then
+                local hum  = obj:FindFirstChildOfClass("Humanoid")
+                local root = obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChild("Root")
+                local myRoot = GetCharacter() and GetCharacter():FindFirstChild("HumanoidRootPart")
+                if hum and hum.Health > 0 and root and myRoot then
+                    local d = (myRoot.Position - root.Position).Magnitude
+                    if d < maxRange and d < bestDist then
+                        bestDist = d
+                        best = obj
+                    end
+                end
+            end
+        end
+    end
+    
+    -- Scan mob folders trước
+    for _, folder in ipairs(folders) do
+        scanFolder(folder)
+    end
+    
+    -- Fallback: dùng workspace descendants
+    if not best then
+        for _, obj in ipairs(workspace:GetDescendants()) do
+            if obj:IsA("Model") and obj ~= Plr.Character then
+                local hum  = obj:FindFirstChildOfClass("Humanoid")
+                local root = obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChild("Root")
+                local myRoot = GetCharacter() and GetCharacter():FindFirstChild("HumanoidRootPart")
+                if hum and hum.Health > 0 and root and myRoot then
+                    -- Bỏ qua NPC/player
+                    local isPlayer = false
+                    for _, p in ipairs(Players:GetPlayers()) do
+                        if p.Character == obj then isPlayer = true; break end
+                    end
+                    if not isPlayer then
+                        local d = (myRoot.Position - root.Position).Magnitude
+                        if d < maxRange and d < bestDist then
+                            bestDist = d
+                            best = obj
+                        end
+                    end
+                end
+            end
+        end
+    end
+    
+    return best, bestDist
+end
+
+-- Tìm Quest NPC gần nhất
+local function findQuestNPC()
+    local best, bestDist = nil, math.huge
+    pcall(function()
+        -- Tìm NPC có chữ "Quest" trong tên hoặc billboardgui
+        local npcFolders = {}
+        for _, name in ipairs({"NPCs", "QuestNPCs", "Quest", "Interactables"}) do
+            local f = workspace:FindFirstChild(name)
+            if f then table.insert(npcFolders, f) end
+        end
+        
+        local function checkNPC(obj)
+            if obj == Plr.Character then return end
+            
+            local root = nil
+            if obj:IsA("Model") then
+                root = obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChild("Root") or obj.PrimaryPart
+            elseif obj:IsA("BasePart") then
+                root = obj
+            end
+            
+            local myRoot = GetCharacter() and GetCharacter():FindFirstChild("HumanoidRootPart")
+            if not root or not myRoot then return end
+            
+            -- Check xem có phải Quest NPC không
+            local isQuestNPC = false
+            local name_lower = obj.Name:lower()
+            if name_lower:find("quest") or name_lower:find("npc") then
+                isQuestNPC = true
+            end
+            -- Check billboard text
+            if not isQuestNPC then
+                for _, gui in ipairs(obj:GetDescendants()) do
+                    if gui:IsA("TextLabel") or gui:IsA("TextButton") then
+                        local txt = gui.Text:lower()
+                        if txt:find("quest") or txt:find("!") or txt:find("nhiệm vụ") then
+                            isQuestNPC = true
+                            break
+                        end
+                    end
+                end
+            end
+            -- Check ProximityPrompt
+            if not isQuestNPC then
+                for _, pp in ipairs(obj:GetDescendants()) do
+                    if pp:IsA("ProximityPrompt") then
+                        local act = pp.ActionText:lower()
+                        local objt = pp.ObjectText:lower()
+                        if act:find("quest") or act:find("talk") or objt:find("quest") then
+                            isQuestNPC = true
+                            break
+                        end
+                    end
+                end
+            end
+            
+            if isQuestNPC then
+                local d = (myRoot.Position - root.Position).Magnitude
+                if d < bestDist then
+                    bestDist = d
+                    best = obj
+                end
+            end
+        end
+        
+        for _, folder in ipairs(npcFolders) do
+            for _, obj in ipairs(folder:GetDescendants()) do
+                checkNPC(obj)
+            end
+        end
+        -- Fallback
+        if not best then
+            for _, obj in ipairs(workspace:GetDescendants()) do
+                checkNPC(obj)
+            end
+        end
+    end)
+    return best, bestDist
+end
+
+-- Di chuyển tới vị trí target
+local function moveToTarget(targetRoot)
+    local myRoot = GetCharacter() and GetCharacter():FindFirstChild("HumanoidRootPart")
+    if not targetRoot or not myRoot then return end
+    local p = targetRoot.Position
+    local d = CFG.Distance
+    local targetPos
+    if     CFG.Position == "Above"  then targetPos = p + Vector3.new(0, d, 0)
+    elseif CFG.Position == "Below"  then targetPos = p + Vector3.new(0, -d, 0)
+    elseif CFG.Position == "Front"  then targetPos = p + targetRoot.CFrame.LookVector * d
+    elseif CFG.Position == "Behind" then targetPos = p - targetRoot.CFrame.LookVector * d
+    else                                 targetPos = p + Vector3.new(d, 0, 0)
+    end
+    if CFG.BypassTp then
+        pcall(function() myRoot.CFrame = CFrame.new(targetPos) end)
+    else
+        local info = TweenInfo.new(CFG.TweenSpeed / 1000, Enum.EasingStyle.Linear)
+        local t = TweenSvc:Create(myRoot, info, {CFrame = CFrame.new(targetPos)})
+        t:Play(); t.Completed:Wait()
+    end
+end
+
+-- =====================================================
+--       ANTI-CHEAT: Disable common detection hooks
+-- =====================================================
+-- Idle detection handled by Anti-AFK loop (VirtualUser)
+
+-- =====================================================
+--                   RAYFIELD WINDOW
+-- =====================================================
+local Window = Rayfield:CreateWindow({
+    Name            = "Himono Hub",
+    Icon            = 0,
+    LoadingTitle    = "Himono Hub",
+    LoadingSubtitle = "Sailor Piece Script",
+    Theme           = "Default",
+    DisableRayfieldPrompts = false,
+    DisableBuildWarnings   = false,
+    ConfigurationSaving = {
+        Enabled    = true,
+        FolderName = "HimonoHub",
+        FileName   = "Config_v21",
+    },
+    KeySystem = false,
+})
+
+-- =====================================================
+--                      MAIN TAB
+-- =====================================================
+local MainTab = Window:CreateTab("Main", "home")
+
+-- ───── Main Menu ─────
+MainTab:CreateSection("Main Menu")
+
+MainTab:CreateDropdown({
+    Name = "Position", Description = "Position For Farming",
+    Options = {"Above", "Behind", "Below"},
+    CurrentOption = {"Above"}, Flag = "Position",
+    Callback = function(o) CFG.Position = o[1] end,
+})
+
+MainTab:CreateSlider({
+    Name = "Distance", Description = "Distance Far From Mob",
+    Range = {1, 20}, Increment = 1, CurrentValue = 5,
+    Flag = "Distance", Callback = function(v) CFG.Distance = v end,
+})
+
+MainTab:CreateToggle({
+    Name = "Bypass Tp",
+    CurrentValue = true, Flag = "BypassTp",
+    Callback = function(s) CFG.BypassTp = s end,
+})
+
+MainTab:CreateSlider({
+    Name = "Tween Speed",
+    Range = {10, 500}, Increment = 5, CurrentValue = 250,
+    Flag = "TweenSpeed", Callback = function(v) CFG.TweenSpeed = v end,
+})
+
+MainTab:CreateToggle({
+    Name = "Auto Farm Level",
+    CurrentValue = false, Flag = "AutoFarmLevel",
+    Callback = function(s) CFG.AutoFarmLevel = s end,
+})
+
+-- Build danh sách quest NPC cho dropdown
+local questOptions = {"Auto (theo Level)"}
+local questNPCLookup = {} -- map label -> {npc, island}
+for _, entry in ipairs(QUEST_NPC_MAP) do
+    local label = entry.npc .. " (" .. entry.island .. " Lv." .. entry.minLvl .. "-" .. entry.maxLvl .. ")"
+    table.insert(questOptions, label)
+    questNPCLookup[label] = {npc = entry.npc, island = entry.island}
+end
+
+MainTab:CreateDropdown({
+    Name = "Quest Selection", Description = "Chọn quest NPC để farm",
+    Options = questOptions, CurrentOption = {"Auto (theo Level)"}, Flag = "QuestSelection",
+    Callback = function(o)
+        local selected = o[1]
+        if selected == "Auto (theo Level)" then
+            CFG.SelectedQuestNPC = "Auto"
+            CFG.SelectedQuestIsland = nil
+        else
+            local data = questNPCLookup[selected]
+            if data then
+                CFG.SelectedQuestNPC = data.npc
+                CFG.SelectedQuestIsland = data.island
+            end
+        end
+    end,
+})
+
+MainTab:CreateToggle({
+    Name = "Auto Farm Quest",
+    CurrentValue = false, Flag = "AutoFarmQuest",
+    Callback = function(s) CFG.AutoFarmQuest = s end,
+})
+
+local islandOpts = {"--"}
+for _, v in ipairs(ISLANDS) do table.insert(islandOpts, v) end
+
+MainTab:CreateDropdown({
+    Name = "Multi Island Selection", Description = "Select Island To Farm",
+    Options = islandOpts, CurrentOption = {"--"}, Flag = "MultiIsland",
+    Callback = function(o) CFG.MultiIsland = o[1] end,
+})
+
+local weaponOpts = {"--"}
+task.spawn(function()
+    task.wait(2)
+    local weapons = getWeaponsFromBackpack()
+    for _, w in ipairs(weapons) do
+        table.insert(weaponOpts, w)
+    end
+    CFG._weaponList = weapons
+end)
+
+local wpn1 = MainTab:CreateDropdown({
+    Name = "Weapon", Description = "Select Your Weapon To Equip",
+    Options = weaponOpts, CurrentOption = {"--"}, Flag = "SelectedWeapon",
+    Callback = function(o) CFG.SelectedWeapon = o[1] end,
+})
+
+local wpn2 = MainTab:CreateDropdown({
+    Name = "Weapon 2", Description = "Select Your Weapon To Equip",
+    Options = weaponOpts, CurrentOption = {"--"}, Flag = "SelectedWeapon2",
+    Callback = function(o) CFG.SelectedWeapon2 = o[1] end,
+})
+
+MainTab:CreateButton({
+    Name = "Refresh Weapon List",
+    Callback = function()
+        local weapons = getWeaponsFromBackpack()
+        local newOpts = {"--"}
+        for _, w in ipairs(weapons) do table.insert(newOpts, w) end
+        CFG._weaponList = weapons
+        -- Rayfield: thử nhiều cách update dropdown
+        pcall(function()
+            if wpn1.Refresh then
+                wpn1:Refresh(newOpts)
+            elseif wpn1.UpdateOptions then
+                wpn1:UpdateOptions(newOpts)
+            elseif wpn1.SetOptions then
+                wpn1:SetOptions(newOpts)
+            end
+            wpn1:Set("--")
+        end)
+        pcall(function()
+            if wpn2.Refresh then
+                wpn2:Refresh(newOpts)
+            elseif wpn2.UpdateOptions then
+                wpn2:UpdateOptions(newOpts)
+            elseif wpn2.SetOptions then
+                wpn2:SetOptions(newOpts)
+            end
+            wpn2:Set("--")
+        end)
+        -- Thông báo kết quả
+        if #weapons > 0 then
+            Rayfield:Notify({
+                Title = "Weapons",
+                Content = "Tìm thấy " .. #weapons .. " vũ khí: " .. table.concat(weapons, ", "),
+                Duration = 5,
+            })
+        else
+            Rayfield:Notify({
+                Title = "Weapons",
+                Content = "Không tìm thấy vũ khí nào trong Backpack! Hãy equip 1 vũ khí trước rồi Refresh lại.",
+                Duration = 5,
+            })
+        end
+    end,
+})
+
+MainTab:CreateSlider({
+    Name = "Delay Between Island",
+    Range = {0.1, 5}, Increment = 0.1, CurrentValue = 1.2,
+    Flag = "DelayIsland", Callback = function(v) CFG.DelayIsland = v end,
+})
+
+MainTab:CreateToggle({
+    Name = "Start Farm Multi Island",
+    CurrentValue = false, Flag = "StartMultiIsland",
+    Callback = function(s) CFG.StartMultiIsland = s end,
+})
+
+MainTab:CreateToggle({
+    Name = "Auto Equip",
+    CurrentValue = false, Flag = "AutoEquip",
+    Callback = function(s) CFG.AutoEquip = s end,
+})
+
+MainTab:CreateToggle({
+    Name = "Auto Swap Tool",
+    CurrentValue = false, Flag = "AutoSwapTool",
+    Callback = function(s) CFG.AutoSwapTool = s end,
+})
+
+MainTab:CreateDropdown({
+    Name = "Skill", Description = "Select skill to use",
+    Options = {"1, 2, 3", "1, 2, 3, 4, 5", "1, 2"}, CurrentOption = {"1, 2, 3"}, Flag = "SkillSetStr",
+    Callback = function(o)
+        local map = { ["1, 2, 3, 4, 5"] = {1, 2, 3, 4, 5}, ["1, 2, 3"] = {1, 2, 3}, ["1, 2"] = {1, 2} }
+        CFG.SkillSet = map[o[1]] or {1, 2, 3}
+    end,
+})
+
+MainTab:CreateToggle({
+    Name = "Auto Attack",
+    CurrentValue = false, Flag = "AutoAttack",
+    Callback = function(s) CFG.AutoAttack = s end,
+})
+
+MainTab:CreateToggle({
+    Name = "Auto Skill",
+    CurrentValue = false, Flag = "AutoSkill",
+    Callback = function(s) CFG.AutoSkill = s end,
+})
+
+MainTab:CreateDropdown({
+    Name = "OnlyBoss Skill", Description = "Select skill to use on boss",
+    Options = {"--", "1, 2, 3, 4, 5"}, CurrentOption = {"--"}, Flag = "OnlyBossSkillStr",
+    Callback = function(o) CFG.OnlyBossSkill = o[1] end,
+})
+
+MainTab:CreateToggle({
+    Name = "Skill On Boss",
+    CurrentValue = false, Flag = "SkillOnBoss",
+    Callback = function(s) CFG.SkillOnBoss = s end,
+})
+
+MainTab:CreateSection("Misc Function")
+
+MainTab:CreateToggle({
+    Name = "Auto Haki (Armament)",
+    CurrentValue = false, Flag = "AutoHaki",
+    Callback = function(s) CFG.AutoHaki = s end,
+})
+
+MainTab:CreateToggle({
+    Name = "Auto Observation Haki",
+    CurrentValue = false, Flag = "AutoObs",
+    Callback = function(s) CFG.AutoObs = s end,
+})
+
+MainTab:CreateToggle({
+    Name = "Auto Conqueror Haki",
+    CurrentValue = false, Flag = "AutoConq",
+    Callback = function(s) CFG.AutoConq = s end,
+})
+
+-- =====================================================
+--                       OP TAB
+-- =====================================================
+local OPTab = Window:CreateTab("OP", "zap")
+OPTab:CreateSection("OP Functions")
+
+OPTab:CreateSlider({
+    Name = "Delay Between Island",
+    Range = {0.1, 3}, Increment = 0.1, Suffix = "s", CurrentValue = 0.6,
+    Flag = "OPDelay", Callback = function(v) CFG.OPDelay = v end,
+})
+
+OPTab:CreateToggle({
+    Name = "All Map Farming",
+    CurrentValue = false, Flag = "AllMapFarming",
+    Callback = function(s) CFG.AllMapFarming = s end,
+})
+
+OPTab:CreateToggle({
+    Name = "OP Farming (CÓ THỂ BỊ KICK)",
+    CurrentValue = false, Flag = "OPFarming",
+    Callback = function(s) CFG.OPFarming = s end,
+})
+
+
+OPTab:CreateToggle({
+    Name = "Reset Character Every 5 Minutes",
+    CurrentValue = false, Flag = "ResetEvery5",
+    Callback = function(s) CFG.ResetEvery5 = s end,
+})
+
+-- =====================================================
+--                      BOSS TAB
+-- =====================================================
+local BossTab = Window:CreateTab("Boss", "skull")
+BossTab:CreateSection("Summon Boss")
+
+BossTab:CreateDropdown({
+    Name = "Boss Selection",
+    Options = BOSSES, CurrentOption = {"SaberBoss"}, Flag = "SummonBossName",
+    Callback = function(o) CFG.SummonBossName = o[1] end,
+})
+
+BossTab:CreateDropdown({
+    Name = "Boss Difficulty",
+    Options = DIFFICULTIES, CurrentOption = {"Normal"}, Flag = "SummonDiff",
+    Callback = function(o) CFG.SummonDiff = o[1] end,
+})
+
+BossTab:CreateLabel("SaberBoss, QinShiBoss, IchigoBoss không cần chọn difficulty")
+
+BossTab:CreateToggle({
+    Name = "Auto Summon Boss",
+    CurrentValue = false, Flag = "AutoSummonBoss",
+    Callback = function(s) CFG.AutoSummonBoss = s end,
+})
+
+BossTab:CreateButton({
+    Name = "Spawn Boss Now",
+    Callback = function()
+        pcall(function()
+            if NO_DIFF_BOSS[CFG.SummonBossName] then
+                Remotes.SummonBoss:FireServer(CFG.SummonBossName)
+            else
+                Remotes.SummonBoss:FireServer(CFG.SummonBossName, CFG.SummonDiff)
+            end
+        end)
+        Rayfield:Notify({Title = "Boss", Content = "Đã summon " .. CFG.SummonBossName, Duration = 3})
+    end,
+})
+
+-- ───── Timed Boss ─────
+BossTab:CreateSection("Timed Boss")
+
+local TIMED_BOSS_LIST = {
+    "AizenBoss", "AlucardBoss", "JinwooBoss", "MadokaBoss", 
+    "SukunaBoss", "Yamato", "YujiBoss", "GojoBoss", "StrongestShinobiBoss"
+}
+
+BossTab:CreateDropdown({
+    Name = "Boss Selection", Description = "Select Timed Boss",
+    Options = TIMED_BOSS_LIST, CurrentOption = {"YujiBoss"}, Flag = "SelectedWorldBoss",
+    Callback = function(o) CFG.SelectedWorldBoss = o[1] end,
+})
+
+BossTab:CreateToggle({
+    Name = "Auto Boss",
+    CurrentValue = false, Flag = "AutoWorldBoss",
+    Callback = function(s) CFG.AutoWorldBoss = s end,
+})
+
+-- =====================================================
+--             DUNGEON / BOSS RUSH TAB
+-- =====================================================
+local DungeonTab = Window:CreateTab("Dungeon, Boss Rush", "swords")
+
+DungeonTab:CreateSection("Join Dungeon")
+
+DungeonTab:CreateDropdown({
+    Name = "Raid Selection",
+    Options = {"InfiniteTower", "BossRush", "CidDungeon", "RuneDungeon", "DoubleDungeon"}, CurrentOption = {"BossRush"}, Flag = "RaidSelection",
+    Callback = function(o) CFG.RaidType = o[1] end,
+})
+
+DungeonTab:CreateToggle({
+    Name = "Auto Join Dungeon",
+    CurrentValue = false, Flag = "AutoJoinDungeon",
+    Callback = function(s) CFG.AutoJoinDungeon = s end,
+})
+
+DungeonTab:CreateSection("Dungeon")
+
+DungeonTab:CreateLabel("Dungeon and Boss Rush In The Same Function, Ty for using axel hub")
+
+DungeonTab:CreateDropdown({
+    Name = "Difficult Selection", Description = "Select Difficult To Select",
+    Options = DUNGEON_DIFFS, CurrentOption = {"Medium"}, Flag = "DungeonDiff",
+    Callback = function(o) CFG.DungeonDiff = o[1] end,
+})
+
+DungeonTab:CreateButton({
+    Name = "Finish Dungeon First Quest In Click",
+    Callback = function()
+        pcall(function() GetRemote(RS, "Remotes.DungeonWaveVote"):FireServer(CFG.DungeonDiff) end)
+        pcall(function() GetRemote(RS, "Remotes.StartDungeonPortal"):InvokeServer() end)
+    end,
+})
+
+DungeonTab:CreateToggle({
+    Name = "Auto Dungeon",
+    CurrentValue = false, Flag = "AutoDungeon",
+    Callback = function(s) CFG.AutoDungeon = s end,
+})
+
+DungeonTab:CreateToggle({
+    Name = "Auto Retry",
+    CurrentValue = false, Flag = "AutoRetry",
+    Callback = function(s) CFG.AutoRetry = s end,
+})
+
+DungeonTab:CreateToggle({
+    Name = "Auto Select Difficult",
+    CurrentValue = false, Flag = "AutoSelectDiff",
+    Callback = function(s) CFG.AutoSelectDiff = s end,
+})
+
+-- ───── Infinite Tower ─────
+DungeonTab:CreateSection("Infinite Tower")
+
+DungeonTab:CreateToggle({
+    Name = "Auto Infinite Tower",
+    CurrentValue = false, Flag = "AutoInfTower",
+    Callback = function(s) CFG.AutoInfTower = s end,
+})
+
+DungeonTab:CreateToggle({
+    Name = "Auto Start",
+    CurrentValue = false, Flag = "TowerAutoStart",
+    Callback = function(s) CFG.TowerAutoStart = s end,
+})
+
+DungeonTab:CreateToggle({
+    Name = "Auto Replay",
+    CurrentValue = false, Flag = "TowerAutoReplay",
+    Callback = function(s) CFG.TowerAutoReplay = s end,
+})
+
+DungeonTab:CreateSlider({
+    Name = "Auto Restart After",
+    Range = {1, 200}, Increment = 1, CurrentValue = 50,
+    Flag = "TowerResetWave", Callback = function(v) CFG.TowerResetWave = v end,
+})
+
+-- =====================================================
+--                     SHOP TAB
+-- =====================================================
+local ShopTab = Window:CreateTab("Shop", "shopping-cart")
+ShopTab:CreateSection("Merchant Shop")
+
+ShopTab:CreateDropdown({
+    Name = "Select Item", Description = "Select Item to Buy",
+    Options = SHOP_ITEMS, CurrentOption = {"Rush Key"}, Flag = "ShopItem",
+    Callback = function(o) CFG.ShopItem = o[1] end,
+})
+
+ShopTab:CreateToggle({
+    Name = "Auto Buy Merchant",
+    CurrentValue = false, Flag = "AutoBuyMerch",
+    Callback = function(s) CFG.AutoBuyMerch = s end,
+})
+
+ShopTab:CreateSection("Trait Reroll")
+
+ShopTab:CreateDropdown({
+    Name = "Target Trait", Description = "Roll đến khi ra Trait này thì dừng",
+    Options = TRAITS, CurrentOption = {"Celestial"}, Flag = "TargetTrait",
+    Callback = function(o) CFG.TargetTrait = o[1] end,
+})
+
+ShopTab:CreateToggle({
+    Name = "Auto Trait Reroll (liên tục)",
+    CurrentValue = false, Flag = "AutoTraitReroll",
+    Callback = function(s) CFG.AutoTraitReroll = s end,
+})
+
+ShopTab:CreateButton({
+    Name = "Reroll Trait x1",
+    Callback = function()
+        safeCall(Remotes.Roll_Trait.FireServer, Remotes.Roll_Trait)
+        Rayfield:Notify({Title = "Trait", Content = "Đã reroll!", Duration = 2})
+    end,
+})
+
+ShopTab:CreateSection("Race Reroll")
+
+ShopTab:CreateDropdown({
+    Name = "Target Race", Description = "Roll đến khi ra Race này thì dừng",
+    Options = RACES, CurrentOption = {"Warlord"}, Flag = "TargetRace",
+    Callback = function(o) CFG.TargetRace = o[1] end,
+})
+
+ShopTab:CreateToggle({
+    Name = "Auto Race Reroll",
+    CurrentValue = false, Flag = "AutoRaceReroll",
+    Callback = function(s) CFG.AutoRaceReroll = s end,
+})
+
+ShopTab:CreateSection("Clan Reroll")
+
+ShopTab:CreateDropdown({
+    Name = "Target Clan", Description = "Roll đến khi ra Clan này thì dừng",
+    Options = CLANS, CurrentOption = {"Alter"}, Flag = "TargetClan",
+    Callback = function(o) CFG.TargetClan = o[1] end,
+})
+
+ShopTab:CreateToggle({
+    Name = "Auto Clan Reroll",
+    CurrentValue = false, Flag = "AutoClanReroll",
+    Callback = function(s) CFG.AutoClanReroll = s end,
+})
+
+ShopTab:CreateSlider({
+    Name = "Delay Mỗi Lần Roll",
+    Range = {0.5, 5}, Increment = 0.1, Suffix = "s", CurrentValue = 1.5,
+    Flag = "TraitRerollDelay",
+    Callback = function(v) CFG.TraitRerollDelay = v end,
+})
+
+-- =====================================================
+--                   TELEPORT TAB
+-- =====================================================
+local TeleTab = Window:CreateTab("Teleport", "map-pin")
+TeleTab:CreateSection("Teleport To Island")
+
+for _, island in ipairs(ISLANDS) do
+    TeleTab:CreateButton({
+        Name = "→ " .. island,
+        Callback = function()
+            -- Check unlock trước khi teleport
+            pcall(function() GetRemote(RS, "Remotes.CheckPortalUnlock"):InvokeServer(island) end)
+            safeWait(0.3, 0.2)
+            safeCall(Remotes.TP_Portal.FireServer, Remotes.TP_Portal, island)
+            Rayfield:Notify({Title = "Tele", Content = "Đang tới " .. island .. "...", Duration = 2})
+        end,
+    })
+end
+
+-- =====================================================
+--                     MISC TAB
+-- =====================================================
+local MiscTab = Window:CreateTab("Misc", "settings-2")
+MiscTab:CreateSection("Misc Menu")
+
+MiscTab:CreateDropdown({
+    Name = "Screen Color",
+    Options = {"Default", "Black", "White"}, CurrentOption = {"Default"},
+    Flag = "ScreenColor",
+    Callback = function(o)
+        local L = game:GetService("Lighting")
+        if     o[1] == "Black" then L.Brightness = 0;  L.OutdoorAmbient = Color3.new(0, 0, 0)
+        elseif o[1] == "White" then L.Brightness = 3;  L.OutdoorAmbient = Color3.new(1, 1, 1)
+        else                        L.Brightness = 1;  L.OutdoorAmbient = Color3.fromRGB(127, 127, 127)
+        end
+    end,
+})
+
+MiscTab:CreateToggle({
+    Name = "Reduce Cpu",
+    CurrentValue = false, Flag = "ReduceCpu",
+    Callback = function(s)
+        CFG.ReduceCpu = s
+        if s then
+            -- Hạ rendering quality xuống thấp nhất (Delta compatible)
+            pcall(function() settings().Rendering.QualityLevel = 1 end)
+            
+            -- Tắt tất cả effects
+            for _, obj in ipairs(workspace:GetDescendants()) do
+                pcall(function()
+                    if obj:IsA("ParticleEmitter") or obj:IsA("Beam") or obj:IsA("Trail") or
+                       obj:IsA("Fire") or obj:IsA("Smoke") or obj:IsA("Sparkles") then
+                        obj.Enabled = false
+                    elseif obj:IsA("PointLight") or obj:IsA("SpotLight") or obj:IsA("SurfaceLight") then
+                        obj.Enabled = false
+                    elseif obj:IsA("Decal") or obj:IsA("Texture") then
+                        obj.Transparency = 1
+                    end
+                end)
+            end
+            
+            -- Giảm shadow
+            pcall(function()
+                local lighting = game:GetService("Lighting")
+                lighting.GlobalShadows = false
+                lighting.FogEnd = 9999
+                lighting.FogStart = 0
+            end)
+            
+            Rayfield:Notify({Title = "CPU", Content = "Reduce CPU ON", Duration = 3})
+        else
+            -- Khôi phục
+            pcall(function() settings().Rendering.QualityLevel = 10 end)
+            pcall(function()
+                local lighting = game:GetService("Lighting")
+                lighting.GlobalShadows = true
+            end)
+            
+            -- Bật lại effects
+            for _, obj in ipairs(workspace:GetDescendants()) do
+                pcall(function()
+                    if obj:IsA("ParticleEmitter") or obj:IsA("Beam") or obj:IsA("Trail") or
+                       obj:IsA("Fire") or obj:IsA("Smoke") or obj:IsA("Sparkles") then
+                        obj.Enabled = true
+                    elseif obj:IsA("PointLight") or obj:IsA("SpotLight") or obj:IsA("SurfaceLight") then
+                        obj.Enabled = true
+                    elseif obj:IsA("Decal") or obj:IsA("Texture") then
+                        obj.Transparency = 0
+                    end
+                end)
+            end
+            
+            Rayfield:Notify({Title = "CPU", Content = "Reduce CPU OFF", Duration = 3})
+        end
+    end,
+})
+
+MiscTab:CreateSection("Anti-Cheat")
+
+MiscTab:CreateToggle({
+    Name = "Anti-Detection Mode",
+    CurrentValue = false, Flag = "AntiDetection",
+    Callback = function(s) CFG.AntiDetection = s end,
+})
+
+MiscTab:CreateToggle({
+    Name = "Anti Knockback",
+    CurrentValue = false, Flag = "AntiKnockback",
+    Callback = function(s) CFG.AntiKnockback = s end,
+})
+
+MiscTab:CreateToggle({
+    Name = "Noclip",
+    CurrentValue = false, Flag = "Noclip",
+    Callback = function(s) CFG.Noclip = s end,
+})
+
+MiscTab:CreateToggle({
+    Name = "Auto Kick (Mod Detection)",
+    CurrentValue = false, Flag = "AutoKick",
+    Callback = function(s) CFG.AutoKick = s end,
+})
+
+MiscTab:CreateToggle({
+    Name = "Delete Spam Notifications",
+    CurrentValue = false, Flag = "AutoDeleteNotif",
+    Callback = function(s) CFG.AutoDeleteNotif = s end,
+})
+
+MiscTab:CreateSection("Kill Aura")
+
+MiscTab:CreateToggle({
+    Name = "Kill Aura",
+    CurrentValue = false, Flag = "KillAura",
+    Callback = function(s) CFG.KillAura = s end,
+})
+
+MiscTab:CreateSlider({
+    Name = "Kill Aura Range", Increment = 10,
+    Range = {10, 200}, CurrentValue = 100, Flag = "KillAuraRange",
+    Callback = function(v) CFG.KillAuraRange = v end,
+})
+
+MiscTab:CreateSlider({
+    Name = "Kill Aura CD", Increment = 0.01,
+    Range = {0.05, 1}, CurrentValue = 0.12, Flag = "KillAuraCD",
+    Callback = function(v) CFG.KillAuraCD = v end,
+})
+
+MiscTab:CreateSection("Skill Combo")
+
+MiscTab:CreateInput({
+    Name = "Combo Pattern (Z>X>C>V>F or Z,X,C,0.5,V)",
+    PlaceholderText = "Z > X > C > V > F",
+    CharacterLimit = 100, Flag = "ComboPattern",
+    Callback = function(t) CFG.ComboPattern = t end,
+})
+
+MiscTab:CreateDropdown({
+    Name = "Combo Mode",
+    Options = {"Normal", "Instant"}, CurrentOption = {"Normal"}, Flag = "ComboMode",
+    Callback = function(o) CFG.ComboMode = o[1] end,
+})
+
+MiscTab:CreateToggle({
+    Name = "Combo Boss Only",
+    CurrentValue = false, Flag = "ComboBossOnly",
+    Callback = function(s) CFG.ComboBossOnly = s end,
+})
+
+MiscTab:CreateToggle({
+    Name = "Auto Skill Combo",
+    CurrentValue = false, Flag = "AutoCombo",
+    Callback = function(s)
+        CFG.AutoCombo = s
+        if s and CFG.AutoSkill then
+            CFG.AutoSkill = false
+            Rayfield:Notify({Title = "Combo", Content = "Auto Skill disabled for Combo to work properly.", Duration = 3})
+        end
+    end,
+})
+
+-- =====================================================
+--                   SETTINGS TAB
+-- =====================================================
+local SettingsTab = Window:CreateTab("Settings", "settings")
+SettingsTab:CreateSection("Configuration")
+
+SettingsTab:CreateButton({
+    Name = "Save Config",
+    Callback = function()
+        pcall(function() Rayfield:SaveConfiguration() end)
+        Rayfield:Notify({Title = "Saved", Content = "Config đã lưu!", Duration = 3})
+    end,
+})
+
+SettingsTab:CreateToggle({
+    Name = "Auto Rejoin khi bị kick",
+    CurrentValue = false, Flag = "AutoRejoin",
+    Callback = function(s) CFG.AutoRejoin = s end,
+})
+
+SettingsTab:CreateSection("Auto Systems")
+
+SettingsTab:CreateToggle({
+    Name = "Auto Ascend",
+    CurrentValue = false, Flag = "AutoAscend",
+    Callback = function(s) CFG.AutoAscend = s end,
+})
+
+SettingsTab:CreateToggle({
+    Name = "Auto Stats Allocation",
+    CurrentValue = false, Flag = "AutoStats",
+    Callback = function(s) CFG.AutoStats = s end,
+})
+
+SettingsTab:CreateDropdown({
+    Name = "Stats To Allocate", Description = "Select stats to auto-distribute points",
+    Options = {"Strength", "Vitality", "Defense", "Agility", "Stamina", "Sword", "Melee"},
+    CurrentOption = {"Strength"}, Flag = "StatsToAllocate", MultipleOptions = true,
+    Callback = function(o) CFG.StatsToAllocate = o end,
+})
+
+SettingsTab:CreateToggle({
+    Name = "Auto Skill Tree",
+    CurrentValue = false, Flag = "AutoSkillTree",
+    Callback = function(s) CFG.AutoSkillTree = s end,
+})
+
+SettingsTab:CreateButton({
+    Name = "Redeem All Codes",
+    Callback = function()
+        local codes = Modules.Codes and Modules.Codes.Codes or {}
+        local count = 0
+        for code, _ in pairs(codes) do
+            pcall(function()
+                if Remotes.UseCode then
+                    Remotes.UseCode:FireServer(code)
+                    count = count + 1
+                end
+            end)
+            task.wait(0.5)
+        end
+        Rayfield:Notify({Title = "Codes", Content = "Redeemed " .. count .. " codes!", Duration = 5})
+    end,
+})
+
+SettingsTab:CreateSection("Status Info")
+
+local statusLabel = SettingsTab:CreateLabel("Tower Wave: 0 | Restarts: 0/3")
+
+-- =====================================================
+--           SETTINGS: ENCHANT / BLESSING
+-- =====================================================
+SettingsTab:CreateSection("Auto Enchant & Blessing")
+
+SettingsTab:CreateDropdown({
+    Name = "Select Accessory (Enchant)",
+    Options = (function()
+        local list = {}
+        for _, item in ipairs(Tables.OwnedAccessory or {}) do table.insert(list, item) end
+        return #list > 0 and list or {"--"}
+    end)(),
+    CurrentOption = {"--"},
+    Flag = "SelectedEnchant_DD",
+    Callback = function(o) CFG.SelectedEnchant = (type(o) == "table" and o[1] or o) end,
+})
+
+SettingsTab:CreateToggle({
+    Name = "Auto Enchant",
+    CurrentValue = false, Flag = "AutoEnchant",
+    Callback = function(s) CFG.AutoEnchant = s end,
+})
+
+SettingsTab:CreateDropdown({
+    Name = "Select Weapon (Blessing)",
+    Options = (function()
+        local list = {}
+        for _, item in ipairs(Tables.OwnedWeapon or {}) do table.insert(list, item) end
+        return #list > 0 and list or {"--"}
+    end)(),
+    CurrentOption = {"--"},
+    Flag = "SelectedBlessing_DD",
+    Callback = function(o) CFG.SelectedBlessing = (type(o) == "table" and o[1] or o) end,
+})
+
+SettingsTab:CreateToggle({
+    Name = "Auto Blessing",
+    CurrentValue = false, Flag = "AutoBlessing",
+    Callback = function(s) CFG.AutoBlessing = s end,
+})
+
+-- =====================================================
+--           SETTINGS: CHEST / CRAFT
+-- =====================================================
+SettingsTab:CreateSection("Auto Chest & Craft")
+
+SettingsTab:CreateDropdown({
+    Name = "Select Chests To Open",
+    Options = {"Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythical", "Aura Crate", "Cosmetic Crate"},
+    CurrentOption = {},
+    MultipleOptions = true,
+    Flag = "SelectedChests_DD",
+    Callback = function(o) CFG.SelectedChests = o end,
+})
+
+SettingsTab:CreateToggle({
+    Name = "Auto Open Chests",
+    CurrentValue = false, Flag = "AutoChest",
+    Callback = function(s) CFG.AutoChest = s end,
+})
+
+SettingsTab:CreateDropdown({
+    Name = "Select Items To Craft",
+    Options = {"DivineGrail", "SlimeKey"},
+    CurrentOption = {},
+    MultipleOptions = true,
+    Flag = "SelectedCraft_DD",
+    Callback = function(o) CFG.SelectedCraft = o end,
+})
+
+SettingsTab:CreateToggle({
+    Name = "Auto Craft",
+    CurrentValue = false, Flag = "AutoCraft",
+    Callback = function(s) CFG.AutoCraft = s end,
+})
+
+-- =====================================================
+--    SETTINGS: TITLE / RUNE / BUILD AUTO-SWITCH
+-- =====================================================
+SettingsTab:CreateSection("Title / Rune / Build Auto-Switch")
+
+local titleOpts = {"None", "Best EXP", "Best Money", "Best Luck", "Best DMG"}
+for _, v in ipairs(Tables.UnlockedTitle or {}) do table.insert(titleOpts, v) end
+
+SettingsTab:CreateToggle({
+    Name = "Auto Switch Title",
+    CurrentValue = false, Flag = "AutoTitle",
+    Callback = function(s) CFG.AutoTitle = s end,
+})
+
+SettingsTab:CreateDropdown({
+    Name = "Default Title",
+    Options = titleOpts, CurrentOption = {"None"}, Flag = "DefaultTitle_DD",
+    Callback = function(o) CFG.DefaultTitle = (type(o) == "table" and o[1] or o) end,
+})
+
+SettingsTab:CreateDropdown({
+    Name = "Title [Boss]",
+    Options = titleOpts, CurrentOption = {"None"}, Flag = "Title_Boss_DD",
+    Callback = function(o) CFG.Title_Boss = (type(o) == "table" and o[1] or o) end,
+})
+
+local runeOpts = {"None"}
+for _, v in ipairs(Tables.RuneList or {}) do table.insert(runeOpts, v) end
+
+SettingsTab:CreateToggle({
+    Name = "Auto Switch Rune",
+    CurrentValue = false, Flag = "AutoRune",
+    Callback = function(s) CFG.AutoRune = s end,
+})
+
+SettingsTab:CreateDropdown({
+    Name = "Default Rune",
+    Options = runeOpts, CurrentOption = {"None"}, Flag = "DefaultRune_DD",
+    Callback = function(o) CFG.DefaultRune = (type(o) == "table" and o[1] or o) end,
+})
+
+SettingsTab:CreateDropdown({
+    Name = "Rune [Boss]",
+    Options = runeOpts, CurrentOption = {"None"}, Flag = "Rune_Boss_DD",
+    Callback = function(o) CFG.Rune_Boss = (type(o) == "table" and o[1] or o) end,
+})
+
+local buildOpts = {"None", "1", "2", "3", "4", "5"}
+
+SettingsTab:CreateToggle({
+    Name = "Auto Switch Build",
+    CurrentValue = false, Flag = "AutoBuild",
+    Callback = function(s) CFG.AutoBuild = s end,
+})
+
+SettingsTab:CreateDropdown({
+    Name = "Default Build Slot",
+    Options = buildOpts, CurrentOption = {"None"}, Flag = "DefaultBuild_DD",
+    Callback = function(o) CFG.DefaultBuild = (type(o) == "table" and o[1] or o) end,
+})
+
+SettingsTab:CreateDropdown({
+    Name = "Build [Boss]",
+    Options = buildOpts, CurrentOption = {"None"}, Flag = "Build_Boss_DD",
+    Callback = function(o) CFG.Build_Boss = (type(o) == "table" and o[1] or o) end,
+})
+
+SettingsTab:CreateSlider({
+    Name = "Boss HP% Threshold (Title/Rune)",
+    Range = {0, 100}, Increment = 5, CurrentValue = 15,
+    Flag = "BossHPThreshold",
+    Callback = function(v) CFG.BossHPThreshold = v end,
+})
+
+-- =====================================================
+--                  WEBHOOK TAB
+-- =====================================================
+local WebhookTab = Window:CreateTab("Webhook", 4483362458)
+
+WebhookTab:CreateSection("Discord Webhook")
+
+WebhookTab:CreateInput({
+    Name = "Webhook URL",
+    PlaceholderText = "https://discord.com/api/webhooks/...",
+    CurrentValue = "",
+    Flag = "WebhookURL_Input",
+    Callback = function(t) CFG.WebhookURL = t end,
+})
+
+WebhookTab:CreateInput({
+    Name = "Discord User ID (for ping)",
+    PlaceholderText = "Enter your Discord UID...",
+    CurrentValue = "",
+    Flag = "WebhookUID_Input",
+    Callback = function(t) CFG.WebhookUID = t end,
+})
+
+WebhookTab:CreateToggle({
+    Name = "Ping User",
+    CurrentValue = false, Flag = "WebhookPing",
+    Callback = function(s) CFG.WebhookPing = s end,
+})
+
+WebhookTab:CreateSlider({
+    Name = "Send Every (minutes)",
+    Range = {1, 30}, Increment = 1, CurrentValue = 5,
+    Flag = "WebhookDelay",
+    Callback = function(v) CFG.WebhookDelay = v end,
+})
+
+WebhookTab:CreateToggle({
+    Name = "Send Webhook",
+    CurrentValue = false, Flag = "SendWebhook",
+    Callback = function(s) CFG.SendWebhook = s end,
+})
+
+WebhookTab:CreateButton({
+    Name = "Test Webhook",
+    Callback = function()
+        PostToWebhook()
+        Rayfield:Notify({Title = "Webhook", Content = "Test sent!", Duration = 3})
+    end,
+})
+
+-- =====================================================
+--                  ARTIFACT TAB
+-- =====================================================
+local ArtifactTab = Window:CreateTab("Artifact", 4483362458)
+
+ArtifactTab:CreateSection("Artifact Status")
+local dustLabel = ArtifactTab:CreateLabel("Dust: 0")
+local invCountLabel = ArtifactTab:CreateLabel("Inventory: 0 items")
+
+ArtifactTab:CreateSection("Artifact Automation")
+
+ArtifactTab:CreateToggle({
+    Name = "Auto Upgrade",
+    CurrentValue = false, Flag = "ArtifactUpgrade",
+    Callback = function(s) CFG.ArtifactUpgrade = s end,
+})
+
+ArtifactTab:CreateSlider({
+    Name = "Upgrade Limit (Level)",
+    Range = {3, 16}, Increment = 1, CurrentValue = 12,
+    Flag = "ArtifactUpgradeLimit",
+    Callback = function(v) CFG.ArtifactUpgradeLimit = v end,
+})
+
+ArtifactTab:CreateToggle({
+    Name = "Auto Lock (Good Substats)",
+    CurrentValue = false, Flag = "ArtifactLock",
+    Callback = function(s) CFG.ArtifactLock = s end,
+})
+
+ArtifactTab:CreateSlider({
+    Name = "Lock Min Substats",
+    Range = {1, 4}, Increment = 1, CurrentValue = 3,
+    Flag = "ArtifactLockMinSS",
+    Callback = function(v) CFG.ArtifactLockMinSS = v end,
+})
+
+ArtifactTab:CreateToggle({
+    Name = "Auto Delete (Unlocked Only)",
+    CurrentValue = false, Flag = "ArtifactDelete",
+    Callback = function(s) CFG.ArtifactDelete = s end,
+})
+
+ArtifactTab:CreateToggle({
+    Name = "Auto Equip Best",
+    CurrentValue = false, Flag = "ArtifactEquipBest",
+    Callback = function(s) CFG.ArtifactEquipBest = s end,
+})
+
+ArtifactTab:CreateToggle({
+    Name = "Auto Claim Milestones",
+    CurrentValue = false, Flag = "ArtifactMilestone",
+    Callback = function(s) CFG.ArtifactMilestone = s end,
+})
+
+task.spawn(function()
+    while true do
+        task.wait(3)
+        pcall(function()
+            if Shared.ArtifactSession then
+                dustLabel:Set("Dust: " .. CommaFormat(Shared.ArtifactSession.Dust or 0))
+                local count = 0
+                if Shared.ArtifactSession.Inventory then
+                    for _ in pairs(Shared.ArtifactSession.Inventory) do count = count + 1 end
+                end
+                invCountLabel:Set("Inventory: " .. count .. " items")
+            end
+        end)
+    end
+end)
+
+-- =====================================================
+--     REDUCE CPU: Auto disable new effects (one-time)
+-- =====================================================
+workspace.DescendantAdded:Connect(function(obj)
+    if not CFG.ReduceCpu then return end
+    pcall(function()
+        if obj:IsA("ParticleEmitter") or obj:IsA("Beam") or obj:IsA("Trail") or
+           obj:IsA("Fire") or obj:IsA("Smoke") or obj:IsA("Sparkles") then
+            obj.Enabled = false
+        elseif obj:IsA("PointLight") or obj:IsA("SpotLight") or obj:IsA("SurfaceLight") then
+            obj.Enabled = false
+        end
+    end)
+end)
+
+-- =====================================================
+--                    CORE LOOPS
+-- =====================================================
+
+-- ───── Anti AFK (VirtualUser - đúng theo Source) ─────
+task.spawn(function()
+    pcall(function()
+        if getconnections or get_signal_cons then
+            local cons = getconnections or get_signal_cons
+            for _, v in pairs(cons(Plr.Idled)) do
+                if v.Disable then v:Disable()
+                elseif v.Disconnect then v:Disconnect() end
+            end
+        end
+    end)
+    while true do
+        safeWait(55, 0.15)
+        pcall(function()
+            VirtualUser:CaptureController()
+            VirtualUser:Button2Down(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
+            task.wait(0.2)
+            VirtualUser:Button2Up(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
+        end)
+    end
+end)
+
+-- ───── Auto Attack ─────
+task.spawn(function()
+    while true do
+        local delay = CFG.AttackDelay
+        if CFG.AntiDetection then
+            delay = delay + math.random(5, 30) / 1000 -- +5~30ms jitter
+        end
+        task.wait(delay)
+        if CFG.AutoAttack and GetCharacter() then
+            if throttle("attack", 0.03) then
+                pcall(function() Remotes.M1:FireServer() end)
+            end
+        end
+    end
+end)
+
+-- ───── Auto Skill ─────
+task.spawn(function()
+    while true do
+        local baseDelay = CFG.SkillDelay
+        if CFG.AntiDetection then
+            baseDelay = baseDelay + math.random(10, 60) / 1000 -- +10~60ms jitter
+        end
+        task.wait(baseDelay)
+
+        if CFG.AutoSkill and GetCharacter() then
+            -- Tìm mob gần nhất (cached, efficient)
+            local mob = nil
+            local nearDist = math.huge
+
+            -- Chỉ tìm trong Mobs folder nếu có, fallback workspace
+            local mobFolder = workspace:FindFirstChild("Mobs") or workspace:FindFirstChild("NPCs") or workspace
+            for _, obj in ipairs(mobFolder:GetChildren()) do
+                if obj:IsA("Model") and obj ~= Plr.Character then
+                    local hum  = obj:FindFirstChildOfClass("Humanoid")
+                    local root = obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChild("Root")
+                    local myRoot2 = GetCharacter() and GetCharacter():FindFirstChild("HumanoidRootPart")
+                    if hum and hum.Health > 0 and root and myRoot2 then
+                        local d = (myRoot2.Position - root.Position).Magnitude
+                        if d < nearDist then nearDist = d; mob = obj end
+                    end
+                end
+            end
+
+            -- Fallback: scan descendants nếu folder không tìm thấy
+            if not mob then
+                for _, obj in ipairs(workspace:GetDescendants()) do
+                    if obj:IsA("Model") and obj ~= Plr.Character then
+                        local hum  = obj:FindFirstChildOfClass("Humanoid")
+                        local root = obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChild("Root")
+                        local myRoot3 = GetCharacter() and GetCharacter():FindFirstChild("HumanoidRootPart")
+                        if hum and hum.Health > 0 and root and myRoot3 then
+                            local d = (myRoot3.Position - root.Position).Magnitude
+                            if d < nearDist and d < 200 then nearDist = d; mob = obj end
+                        end
+                    end
+                end
+            end
+
+            local isBossNearby = mob and mob.Name:lower():find("boss") ~= nil
+
+            -- Fire skill remotes
+            for _, idx in ipairs(CFG.SkillSet) do
+                if not CFG.SkillOnBoss or isBossNearby then
+                    if throttle("skill_" .. idx, 0.05) then
+                        pcall(function() Remotes.UseSkill:FireServer(idx) end)
+                        -- Add small random delay between each skill
+                        if CFG.AntiDetection then
+                            task.wait(math.random(20, 60) / 1000)
+                        else
+                            task.wait(0.04)
+                        end
+                    end
+                end
+            end
+        end
+    end
+end)
+
+-- ───── Auto Swap Tool Loop ─────
+task.spawn(function()
+    while true do
+        safeWait(3, 0.4)
+        if CFG.AutoSwapTool and CFG.SelectedWeapon and CFG.SelectedWeapon2 and CFG.SelectedWeapon ~= "--" and CFG.SelectedWeapon2 ~= "--" then
+            -- Chỉ swap khi đang tham gia farm
+            if CFG.AutoFarmLevel or CFG.AutoFarmQuest or CFG.AutoWorldBoss or CFG.AutoDungeon then
+                local current = nil
+                local char = Plr.Character
+                if char then
+                    for _, tool in ipairs(char:GetChildren()) do
+                        if tool:IsA("Tool") then current = tool.Name end
+                    end
+                end
+                
+                -- Đổi qua lại
+                if current == CFG.SelectedWeapon then
+                    equipWeapon(CFG.SelectedWeapon2)
+                else
+                    equipWeapon(CFG.SelectedWeapon)
+                end
+            end
+        end
+    end
+end)
+
+-- ───── Auto Equip Loop ─────
+task.spawn(function()
+    while true do
+        safeWait(2, 0.3)
+        if CFG.AutoEquip and CFG.SelectedWeapon ~= "--" and GetCharacter() then
+            equipWeapon(CFG.SelectedWeapon)
+        end
+    end
+end)
+
+-- ───── Auto Farm Level (Smart Island + Tìm mob → di chuyển) ─────
+local _lastIslandCheck = 0
+local _lastIslandTeleported = nil
+task.spawn(function()
+    while task.wait(0.1) do
+        if CFG.AutoFarmLevel and not CFG._isFarmingWorldBoss and GetCharacter() then
+            -- SKIP island teleport nếu đang trong dungeon/tower
+            if not CFG._isInDungeon then
+                -- Auto equip weapon trước khi farm
+                if CFG.AutoEquip and CFG.SelectedWeapon ~= "--" then
+                    equipWeapon(CFG.SelectedWeapon)
+                end
+                
+                -- Smart Island: Check level mỗi 15 giây → teleport đúng island
+                if CFG.SmartIslandFarm then
+                    local now = tick()
+                    if now - _lastIslandCheck > 15 then
+                        _lastIslandCheck = now
+                        local playerLvl = getPlayerLevel()
+                        local targetIsland = getIslandForLevel(playerLvl)
+                        
+                        if targetIsland ~= _lastIslandTeleported then
+                            _lastIslandTeleported = targetIsland
+                            CFG._currentFarmIsland = targetIsland
+                            
+                            Rayfield:Notify({
+                                Title = "Smart Farm",
+                                Content = "Level " .. playerLvl .. " → Teleport đến " .. targetIsland,
+                                Duration = 4,
+                            })
+                            
+                            pcall(function() Remotes.TP_Portal:FireServer(targetIsland) end)
+                            safeWait(3, 0.2)
+                        end
+                    end
+                end
+                
+                -- Tìm mob gần nhất
+                local nearest = findMobForLevel(CFG.FarmRange)
+                
+                -- Nếu không tìm thấy mob → re-teleport
+                if not nearest and CFG.SmartIslandFarm then
+                    local playerLvl = getPlayerLevel()
+                    local targetIsland = getIslandForLevel(playerLvl)
+                    pcall(function() Remotes.TP_Portal:FireServer(targetIsland) end)
+                    safeWait(3, 0.2)
+                    nearest = findMobForLevel(CFG.FarmRange)
+                end
+                
+                -- Teleport tới mob (attack/skill do loop riêng lo)
+                if nearest then
+                    local root = nearest:FindFirstChild("HumanoidRootPart") or nearest:FindFirstChild("Root")
+                    if root then
+                        moveToTarget(root)
+                    end
+                end
+            else
+                -- Đang trong dungeon → chỉ farm mob tại chỗ
+                local nearest = findMobForLevel(CFG.FarmRange)
+                if nearest then
+                    local root = nearest:FindFirstChild("HumanoidRootPart") or nearest:FindFirstChild("Root")
+                    if root then
+                        moveToTarget(root)
+                    end
+                end
+            end
+            
+            -- Update status
+            pcall(function()
+                local lvl = getPlayerLevel()
+                local island = CFG._currentFarmIsland or "N/A"
+                local dungeonStr = CFG._isInDungeon and " [IN DUNGEON]" or ""
+                local wbStr = CFG._isFarmingWorldBoss and " [WORLD BOSS RUSH]" or ""
+                statusLabel:Set("Level: " .. lvl .. " | Island: " .. island .. dungeonStr .. wbStr)
+            end)
+        end
+    end
+end)
+
+-- ───── Auto Farm Quest (Liên tục: farm mob + tự nhận quest mới khi xong) ─────
+task.spawn(function()
+    local _lastQuestAccept = 0
+    local _lastIslandTp = 0
+    local _questInitialized = false
+    
+    while true do
+        task.wait(0.1)
+        if not CFG.AutoFarmQuest then
+            _questInitialized = false -- Reset khi tắt rồi bật lại
+            continue
+        end
+        if not GetCharacter() then continue end
+        
+        -- Xác định quest NPC và island
+        local questNPC, questIsland
+        if CFG.SelectedQuestNPC == "Auto" or not CFG.SelectedQuestNPC then
+            local playerLvl = getPlayerLevel()
+            questNPC, questIsland = getQuestNPCForLevel(playerLvl)
+        else
+            questNPC = CFG.SelectedQuestNPC
+            questIsland = CFG.SelectedQuestIsland
+        end
+        
+        -- Lần đầu tiên: abandon quest cũ + nhận quest mới + tele đến đảo
+        if not _questInitialized then
+            _questInitialized = true
+            -- Tele đến đảo
+            if questIsland then
+                pcall(function() Remotes.TP_Portal:FireServer(questIsland) end)
+                safeWait(2, 0.2)
+            end
+            -- Abandon quest cũ 1 lần duy nhất
+            pcall(function() Remotes.QuestAbandon:FireServer("repeatable") end)
+            task.wait(0.2)
+            -- Nhận quest mới
+            pcall(function() Remotes.QuestAccept:FireServer(questNPC) end)
+            _lastQuestAccept = tick()
+            _lastIslandTp = tick()
+        end
+        
+        -- Mỗi 10s: check lại island (phòng bị đẩy ra)
+        local now = tick()
+        if questIsland and now - _lastIslandTp > 10 then
+            _lastIslandTp = now
+            pcall(function() Remotes.TP_Portal:FireServer(questIsland) end)
+            safeWait(1.5, 0.2)
+        end
+        
+        -- Mỗi 3s: thử nhận quest (không abandon!)
+        -- Nếu quest chưa xong → QuestAccept không ảnh hưởng gì
+        -- Nếu quest đã xong → QuestAccept sẽ nhận quest mới ngay!
+        if now - _lastQuestAccept > 3 then
+            _lastQuestAccept = now
+            pcall(function() Remotes.QuestAccept:FireServer(questNPC) end)
+        end
+        
+        -- Auto equip weapon
+        if CFG.AutoEquip and CFG.SelectedWeapon ~= "--" then
+            equipWeapon(CFG.SelectedWeapon)
+        end
+        
+        -- Tìm mob gần nhất → teleport tới (attack/skill do loop riêng lo)
+        local mob = findMobForLevel(CFG.FarmRange)
+        if mob then
+            local root = mob:FindFirstChild("HumanoidRootPart") or mob:FindFirstChild("Root")
+            if root then
+                moveToTarget(root)
+            end
+        end
+    end
+end)
+
+-- ───── Auto Haki (Armament) ─────
+task.spawn(function()
+    while true do
+        safeWait(4, 0.2)
+        if CFG.AutoHaki and not CFG._hakiState then
+            pcall(function() Remotes.ArmHaki:FireServer("Toggle") end)
+            CFG._hakiState = true
+        elseif not CFG.AutoHaki and CFG._hakiState then
+            pcall(function() Remotes.ArmHaki:FireServer("Toggle") end)
+            CFG._hakiState = false
+        end
+    end
+end)
+
+-- ───── Auto Observation Haki ─────
+task.spawn(function()
+    while true do
+        safeWait(4, 0.2)
+        if CFG.AutoObs and not CFG._obsState then
+            pcall(function() Remotes.ObserHaki:FireServer("Toggle") end)
+            CFG._obsState = true
+        elseif not CFG.AutoObs and CFG._obsState then
+            pcall(function() Remotes.ObserHaki:FireServer("Toggle") end)
+            CFG._obsState = false
+        end
+    end
+end)
+
+-- ───── Auto Conqueror Haki ─────
+task.spawn(function()
+    while true do
+        safeWait(8, 0.15)
+        if CFG.AutoConq and not CFG._conqState then
+            pcall(function() Remotes.ConquerorHaki:FireServer("Activate") end)
+            CFG._conqState = true
+        elseif not CFG.AutoConq and CFG._conqState then
+            pcall(function() Remotes.ConquerorHaki:FireServer("Activate") end)
+            CFG._conqState = false
+        end
+    end
+end)
+
+
+
+-- ───── Auto Summon Boss ─────
+task.spawn(function()
+    while true do
+        safeWait(12, 0.2)
+        if CFG.AutoSummonBoss then
+            pcall(function()
+                local bossId = SummonMap[CFG.SummonBossName] or CFG.SummonBossName
+                if NO_DIFF_BOSS[CFG.SummonBossName] then
+                    Remotes.SummonBoss:FireServer(bossId)
+                else
+                    Remotes.SummonBoss:FireServer(bossId, CFG.SummonDiff)
+                end
+            end)
+        end
+    end
+end)
+
+-- ───── Auto World Boss (Timed Boss Selection) ─────
+task.spawn(function()
+    while true do
+        safeWait(1.5, 0.2)
+        if CFG.AutoWorldBoss and CFG.SelectedWorldBoss then
+            local targetBoss = nil
+            
+            -- Check workspace xem con boss đang chọn có xuất hiện không
+            local function checkWorldForBoss()
+                for _, obj in ipairs(workspace:GetDescendants()) do
+                    if obj:IsA("Model") and string.lower(obj.Name) == string.lower(CFG.SelectedWorldBoss) then
+                        local root = obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChild("Root")
+                        local hum = obj:FindFirstChildOfClass("Humanoid")
+                        if root and hum and hum.Health > 0 then
+                            return obj
+                        end
+                    end
+                end
+                return nil
+            end
+            
+            targetBoss = checkWorldForBoss()
+            
+            if targetBoss then
+                -- Báo hiệu đang đánh boss để main loop (Farm Level) tạm dừng cướp quyền control
+                CFG._isFarmingWorldBoss = true
+                
+                local root = targetBoss:FindFirstChild("HumanoidRootPart") or targetBoss:FindFirstChild("Root")
+                if root and GetCharacter() then
+                    moveToTarget(root)
+                    pcall(function() Remotes.M1:FireServer() end)
+                    for _, idx in ipairs(CFG.SkillSet) do
+                        pcall(function() Remotes.UseSkill:FireServer(idx) end)
+                        task.wait(math.random(20, 50) / 1000)
+                    end
+                end
+            else
+                -- Không tìm thấy -> trả lại cờ để auto farm level tiếp tục chạy như bt
+                CFG._isFarmingWorldBoss = false
+            end
+        else
+            CFG._isFarmingWorldBoss = false
+        end
+    end
+end)
+
+-- ───── Auto Join Dungeon / Boss Rush / Tower ─────
+task.spawn(function()
+    while true do
+        safeWait(5, 0.3)
+        if CFG.AutoJoinDungeon and CFG.RaidType then
+            -- Gửi request join dungeon/boss rush/tower
+            pcall(function() Remotes.OpenDungeon:InvokeServer(CFG.RaidType) end)
+            safeWait(2, 0.2)
+            -- Auto start luôn sau khi join
+            pcall(function() GetRemote(RS, "Remotes.StartDungeonPortal"):InvokeServer() end)
+            safeWait(1, 0.2)
+            -- Vote difficulty nếu có
+            if CFG.DungeonDiff then
+                pcall(function() GetRemote(RS, "Remotes.DungeonWaveVote"):FireServer(CFG.DungeonDiff) end)
+            end
+        end
+    end
+end)
+
+-- ───── Auto Boss Rush / Dungeon (Vote + Farm Mob + Replay) ─────
+task.spawn(function()
+    while true do
+        task.wait(0.15)
+        
+        if CFG.AutoDungeon then
+            -- Vote difficulty liên tục nếu có AutoSelectDiff
+            if CFG.AutoSelectDiff then
+                pcall(function() GetRemote(RS, "Remotes.DungeonWaveVote"):FireServer(CFG.DungeonDiff) end)
+            end
+            
+            -- Đánh dấu đang trong dungeon
+            CFG._isInDungeon = true
+            
+            -- Farm mob trong dungeon (teleport tới mob, attack/skill do loop riêng)
+            if GetCharacter() then
+                local mob = findMobForLevel(CFG.FarmRange)
+                if mob then
+                    local root = mob:FindFirstChild("HumanoidRootPart") or mob:FindFirstChild("Root")
+                    if root then
+                        moveToTarget(root)
+                    end
+                end
+            end
+            
+            -- Auto Retry
+            if CFG.AutoRetry then
+                pcall(function() GetRemote(RS, "Remotes.DungeonWaveReplayVote"):FireServer("sponsor") end)
+            end
+        else
+            if not CFG.AutoInfTower then
+                CFG._isInDungeon = false
+            end
+        end
+    end
+end)
+
+-- ───── Auto Buy Merch (dùng MerchantBuy remote) ─────
+task.spawn(function()
+    while true do
+        safeWait(2, 0.2)
+        if CFG.AutoBuyMerch then
+            pcall(function() Remotes.MerchantBuy:InvokeServer(CFG.ShopItem, 1) end)
+        end
+    end
+end)
+
+-- ───── Auto Trait Reroll ─────
+task.spawn(function()
+    while true do
+        safeWait(CFG.TraitRerollDelay, 0.2)
+        if CFG.AutoTraitReroll then
+            pcall(function() Remotes.Roll_Trait:FireServer() end)
+        end
+    end
+end)
+
+-- =====================================================
+--           INFINITE TOWER AUTO LOGIC
+-- =====================================================
+local function GetCurrentWave()
+    local waveNum = nil
+    pcall(function()
+        for _, gui in pairs(Plr.PlayerGui:GetDescendants()) do
+            if gui:IsA("TextLabel") and gui.Visible and gui.Text ~= "" then
+                local txt = string.lower(gui.Text)
+                -- Tìm pattern "wave X" hoặc "floor X" hoặc "tầng X"
+                if string.find(txt, "wave") or string.find(txt, "floor") then
+                    local num = string.match(txt, "wave%s*(%d+)")
+                        or string.match(txt, "floor%s*(%d+)")
+                        or string.match(txt, "%d+")
+                    if num then
+                        waveNum = tonumber(num)
+                        return
+                    end
+                end
+            end
+        end
+    end)
+    return waveNum
+end
+
+local isResettingTower = false
+task.spawn(function()
+    while true do
+        safeWait(2, 0.15)
+
+        if not CFG.AutoInfTower then
+            task.wait(1)
+        elseif isResettingTower then
+            task.wait(0.5)
+        else
+
+        -- Đánh dấu đang trong dungeon/tower
+        CFG._isInDungeon = true
+
+        -- Farm mob trong tower (teleport tới mob, attack/skill do loop riêng)
+        if GetCharacter() then
+            local mob = findMobForLevel(CFG.FarmRange)
+            if mob then
+                local root = mob:FindFirstChild("HumanoidRootPart") or mob:FindFirstChild("Root")
+                if root then
+                    moveToTarget(root)
+                end
+            end
+        end
+
+        local waveNum = GetCurrentWave()
+        if waveNum then
+            CFG._towerWave = waveNum
+        end
+
+        -- Auto Start & Auto Replay cho Tower
+        if CFG.TowerAutoStart then
+            pcall(function() GetRemote(RS, "Remotes.StartDungeonPortal"):FireServer() end)
+        end
+        if CFG.TowerAutoReplay then
+            pcall(function() GetRemote(RS, "Remotes.DungeonWaveReplayVote"):FireServer("sponsor") end)
+        end
+
+        -- Update status label
+        pcall(function()
+            statusLabel:Set("Tower Wave: " .. tostring(CFG._towerWave) .. " / " .. tostring(CFG.TowerResetWave))
+        end)
+
+        -- Kiểm tra có cần reset không
+        if CFG._towerWave >= CFG.TowerResetWave then
+            isResettingTower = true
+
+            Rayfield:Notify({
+                Title = "Tower Reset",
+                Content = string.format("Reach %d Waves! Leaving to Restart...", CFG._towerWave),
+                Duration = 4,
+            })
+
+            -- Rời khỏi tower
+            safeCall(GetRemote(RS, "Remotes.LeaveDungeonPortal").FireServer, GetRemote(RS, "Remotes.LeaveDungeonPortal"))
+            safeWait(3, 0.2)
+            
+            CFG._towerWave = 0
+            
+            -- Quay lại Tower
+            safeCall(Remotes.OpenDungeon.FireServer, Remotes.OpenDungeon, "InfiniteTower")
+            safeWait(3, 0.2)
+
+            safeWait(1, 0.15)
+            isResettingTower = false
+        end
+        end -- end else (active tower farming)
+    end
+end)
+
+-- ───── Multi Island Auto Farm ─────
+task.spawn(function()
+    while true do
+        safeWait(1, 0.3)
+        if CFG.StartMultiIsland and CFG.MultiIsland ~= "--" then
+            safeCall(Remotes.TP_Portal.FireServer, Remotes.TP_Portal, CFG.MultiIsland)
+            safeWait(CFG.DelayIsland, 0.2)
+        end
+    end
+end)
+
+-- ───── Danh sách đảo có mob farm được (endgame đầu → starter cuối = đồ ngon trước) ─────
+-- FARM_ISLANDS_ENDGAME_FIRST đã khai báo ở trên (sau IslandCrystals)
+
+-- Helper: tìm mob gần nhất trên map hiện tại (không giới hạn range)
+local function findNearestMobOnMap()
+    local myRoot = GetCharacter() and GetCharacter():FindFirstChild("HumanoidRootPart")
+    if not myRoot then return nil, nil, nil end
+    local best, bestRoot, bestHum, bestDist = nil, nil, nil, math.huge
+    
+    -- Ưu tiên Mobs folder
+    local mobFolders = {}
+    for _, name in ipairs({"Mobs", "NPCs", "Enemies", "Monsters"}) do
+        local f = workspace:FindFirstChild(name)
+        if f then table.insert(mobFolders, f) end
+    end
+    
+    local function scan(container, useDesc)
+        local list = useDesc and container:GetDescendants() or container:GetChildren()
+        for _, obj in ipairs(list) do
+            if obj:IsA("Model") and obj ~= Plr.Character then
+                local hum  = obj:FindFirstChildOfClass("Humanoid")
+                local root = obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChild("Root")
+                if hum and hum.Health > 0 and root then
+                    local isPlayer = false
+                    for _, p in ipairs(Players:GetPlayers()) do
+                        if p.Character == obj then isPlayer = true; break end
+                    end
+                    if not isPlayer then
+                        local d = (myRoot.Position - root.Position).Magnitude
+                        if d < bestDist then
+                            bestDist = d
+                            best = obj
+                            bestRoot = root
+                            bestHum = hum
+                        end
+                    end
+                end
+            end
+        end
+    end
+    
+    for _, folder in ipairs(mobFolders) do scan(folder, false) end
+    if not best then scan(workspace, true) end
+    
+    return best, bestRoot, bestHum
+end
+
+-- Helper: Lock-on 1 mob → đợi chết → return
+-- configKey = cờ toggle để check (VD: "OPFarming" hoặc "AllMapFarming")
+-- delay = thời gian giữa mỗi lần tele update
+local function lockOnAndKill(mob, mobRoot, mobHum, configKey, delay)
+    if not mob or not mobRoot or not mobHum then return end
+    local lockStart = tick()
+    local MAX_LOCK_TIME = 15 -- 15s timeout phòng mob bất tử
+    
+    while CFG[configKey] and GetCharacter() do
+        -- Mob chết / bị destroy?
+        if not mob or not mob.Parent then break end
+        if not mobHum or mobHum.Health <= 0 then break end
+        if not mobRoot or not mobRoot.Parent then break end
+        -- Timeout
+        if tick() - lockStart > MAX_LOCK_TIME then break end
+        
+        -- Teleport tới sau lưng mob
+        pcall(function()
+            local myRoot = GetCharacter() and GetCharacter():FindFirstChild("HumanoidRootPart")
+            if myRoot then myRoot.CFrame = CFrame.new(mobRoot.Position - mobRoot.CFrame.LookVector * CFG.Distance) end
+        end)
+        
+        task.wait(delay)
+    end
+end
+
+-- ───── OP Farming Loop (TẤT CẢ đảo, endgame first, tele NHANH, kill từng con) ─────
+-- Tele khắp bản đồ → mỗi đảo tìm mob → lock-on kill → hết mob → đảo tiếp
+task.spawn(function()
+    while true do
+        task.wait(0.2)
+        
+        if not CFG.OPFarming then continue end
+        if not GetCharacter() then continue end
+
+        -- Lặp qua TẤT CẢ đảo (endgame trước cho đồ ngon)
+        for _, islandName in ipairs(FARM_ISLANDS_ENDGAME_FIRST) do
+            if not CFG.OPFarming then break end
+            if not GetCharacter() then break end
+            
+            -- Teleport tới đảo
+            pcall(function() Remotes.TP_Portal:FireServer(islandName) end)
+            task.wait(CFG.OPDelay or 0.6) -- Đợi load đảo
+            
+            -- Đợi respawn nếu chết khi tele
+            if not GetCharacter() then
+                while not GetCharacter() do task.wait(0.5) end
+                task.wait(1)
+            end
+            
+            -- Farm hết mob trên đảo này (tối đa 30s/đảo rồi chuyển)
+            local islandStart = tick()
+            local MAX_TIME_PER_ISLAND = 30
+            local noMobCount = 0
+            
+            while CFG.OPFarming and GetCharacter() and (tick() - islandStart < MAX_TIME_PER_ISLAND) do
+                if not GetCharacter() then break end
+                
+                local mob, mobRoot, mobHum = findNearestMobOnMap()
+                
+                if mob and mobRoot and mobHum then
+                    noMobCount = 0
+                    -- Lock-on kill con này (nhanh, OPDelay ~0.1-0.3s)
+                    lockOnAndKill(mob, mobRoot, mobHum, "OPFarming", CFG.OPDelay or 0.15)
+                else
+                    -- Không tìm thấy mob → chờ 1 chút, nếu 3 lần liên tiếp thì chuyển đảo
+                    noMobCount = noMobCount + 1
+                    if noMobCount >= 3 then break end
+                    task.wait(0.5)
+                end
+            end
+        end
+    end
+end)
+
+-- ───── All Map Farming Loop (TẤT CẢ đảo, endgame first, tele CHẬM hơn OP) ─────
+-- Giống OP nhưng delay chậm hơn, an toàn hơn
+task.spawn(function()
+    while true do
+        task.wait(1)
+        if not CFG.AllMapFarming then continue end
+        if not GetCharacter() then continue end
+
+        for _, islandName in ipairs(FARM_ISLANDS_ENDGAME_FIRST) do
+            if not CFG.AllMapFarming then break end
+            if not GetCharacter() then break end
+            
+            -- Teleport đến island
+            pcall(function() Remotes.TP_Portal:FireServer(islandName) end)
+            safeWait(CFG.DelayIsland or 1.2, 0.2)
+            
+            -- Đợi respawn nếu chết khi tele
+            if not GetCharacter() then
+                while not GetCharacter() do task.wait(0.5) end
+                task.wait(1.5)
+            end
+            
+            -- Farm mob ở island đó (tối đa 45s/đảo, chậm hơn OP)
+            local islandStart = tick()
+            local MAX_TIME_PER_ISLAND = 45
+            local noMobCount = 0
+            
+            while CFG.AllMapFarming and GetCharacter() and (tick() - islandStart < MAX_TIME_PER_ISLAND) do
+                if not GetCharacter() then break end
+                
+                local mob, mobRoot, mobHum = findNearestMobOnMap()
+                
+                if mob and mobRoot and mobHum then
+                    noMobCount = 0
+                    -- Lock-on kill (chậm hơn, delay ~0.3-0.5s)
+                    lockOnAndKill(mob, mobRoot, mobHum, "AllMapFarming", 0.35)
+                else
+                    noMobCount = noMobCount + 1
+                    if noMobCount >= 3 then break end
+                    task.wait(1)
+                end
+            end
+        end
+    end
+end)
+
+-- ───── Reset Every 5 Minutes ─────
+task.spawn(function()
+    while true do
+        safeWait(300, 0.05) -- ~5 minutes
+        if CFG.ResetEvery5 and GetCharacter() then
+            pcall(function() GetCharacter():FindFirstChildOfClass("Humanoid").Health = 0 end)
+        end
+    end
+end)
+
+-- ───── Auto Rejoin ─────
+Plr.OnTeleport:Connect(function(state)
+    if state == Enum.TeleportState.Failed and CFG.AutoRejoin then
+        safeWait(5, 0.3)
+        pcall(function() TeleportSvc:Teleport(game.PlaceId) end)
+    end
+end)
+
+-- ───── Status Updater ─────
+task.spawn(function()
+    while true do
+        task.wait(5)
+        pcall(function()
+            statusLabel:Set("Tower Wave: " .. tostring(CFG._towerWave) .. " / " .. tostring(CFG.TowerResetWave))
+        end)
+    end
+end)
+
+-- =====================================================
+--       AUTO REROLL LOOP (Trait / Race / Clan)
+-- =====================================================
+task.spawn(function()
+    local function getPlayerStat(statName)
+        if not Plr then return nil end
+        local data = Plr:FindFirstChild("Data") or Plr:FindFirstChild("leaderstats") or Plr
+        for _, v in ipairs(data:GetDescendants()) do
+            if (v:IsA("StringValue") or v:IsA("ValueBase")) and v.Name == statName then
+                return tostring(v.Value)
+            end
+        end
+        for _, v in ipairs(Plr:GetDescendants()) do
+            if v:IsA("TextLabel") and v.Name:find(statName) then
+                return tostring(v.Text)
+            end
+        end
+        return nil
+    end
+
+    while true do
+        safeWait(2, 0.4)
+
+        if CFG.AutoTraitReroll then
+            local current = getPlayerStat("Trait")
+            if current and CFG.TargetTrait and current:lower():find(CFG.TargetTrait:lower()) then
+                CFG.AutoTraitReroll = false
+                Rayfield:Notify({Title="Roll Trait", Content="Đã ra Trait: " .. CFG.TargetTrait, Duration=5})
+            else
+                pcall(function() Remotes.Roll_Trait:FireServer() end)
+                task.wait(CFG.TraitRerollDelay or 1.5)
+            end
+        end
+
+        if CFG.AutoRaceReroll then
+            local current = getPlayerStat("Race") or (Plr:GetAttribute("CurrentRace") and tostring(Plr:GetAttribute("CurrentRace")))
+            if current and CFG.TargetRace and current:lower():find(CFG.TargetRace:lower()) then
+                CFG.AutoRaceReroll = false
+                Rayfield:Notify({Title="Roll Race", Content="Đã ra Race: " .. CFG.TargetRace, Duration=5})
+            else
+                pcall(function() Remotes.UseItem:FireServer("Use", "Race Reroll", 1) end)
+                task.wait(CFG.TraitRerollDelay or 1.5)
+            end
+        end
+
+        if CFG.AutoClanReroll then
+            local current = getPlayerStat("Clan") or (Plr:GetAttribute("CurrentClan") and tostring(Plr:GetAttribute("CurrentClan")))
+            if current and CFG.TargetClan and current:lower():find(CFG.TargetClan:lower()) then
+                CFG.AutoClanReroll = false
+                Rayfield:Notify({Title="Roll Clan", Content="Đã ra Clan: " .. CFG.TargetClan, Duration=5})
+            else
+                pcall(function() Remotes.UseItem:FireServer("Use", "Clan Reroll", 1) end)
+                task.wait(CFG.TraitRerollDelay or 1.5)
+            end
+        end
+    end
+end)
+
+-- =====================================================
+--           AUTO ASCEND (from Source)
+-- =====================================================
+task.spawn(function()
+    while true do
+        safeWait(15, 0.3)
+        if CFG.AutoAscend and Remotes.Ascend then
+            pcall(function()
+                if Remotes.ReqAscend then
+                    Remotes.ReqAscend:FireServer()
+                    task.wait(1.5)
+                end
+                Remotes.Ascend:FireServer()
+                task.wait(1)
+                if Remotes.CloseAscend then
+                    Remotes.CloseAscend:FireServer()
+                end
+            end)
+        end
+    end
+end)
+
+-- =====================================================
+--           AUTO STATS ALLOCATION (from Source)
+-- =====================================================
+task.spawn(function()
+    while true do
+        safeWait(2, 0.3)
+        if CFG.AutoStats and Remotes.AddStat then
+            pcall(function()
+                local pointsPath = Plr:FindFirstChild("Data") and Plr.Data:FindFirstChild("StatPoints")
+                if not pointsPath then return end
+                local availablePoints = pointsPath.Value
+                if availablePoints <= 0 then return end
+                local MAX_STAT_LEVEL = 11500
+                local activeStats = {}
+                local selected = CFG.StatsToAllocate or {"Strength"}
+                if type(selected) == "table" then
+                    for _, statName in ipairs(selected) do
+                        local currentLevel = Shared.Stats[statName] or 0
+                        if currentLevel < MAX_STAT_LEVEL then
+                            table.insert(activeStats, statName)
+                        end
+                    end
+                end
+                local statCount = #activeStats
+                if statCount > 0 then
+                    local pointsPerStat = math.floor(availablePoints / statCount)
+                    if pointsPerStat > 0 then
+                        for _, stat in ipairs(activeStats) do
+                            Remotes.AddStat:FireServer(stat, pointsPerStat)
+                        end
+                    else
+                        Remotes.AddStat:FireServer(activeStats[1], availablePoints)
+                    end
+                end
+            end)
+        end
+    end
+end)
+
+-- =====================================================
+--           AUTO SKILL TREE (from Source)
+-- =====================================================
+task.spawn(function()
+    while true do
+        safeWait(3, 0.3)
+        if CFG.AutoSkillTree and Remotes.SkillTreeUpgrade then
+            pcall(function()
+                local points = Shared.SkillTree.SkillPoints or 0
+                if points <= 0 then return end
+                if Modules.SkillTree and Modules.SkillTree.Branches then
+                    for _, branch in pairs(Modules.SkillTree.Branches) do
+                        for _, node in ipairs(branch.Nodes or {}) do
+                            local nodeId = node.Id
+                            local cost = node.Cost or 1
+                            if not Shared.SkillTree.Nodes[nodeId] and points >= cost then
+                                Remotes.SkillTreeUpgrade:FireServer(nodeId)
+                                Shared.SkillTree.SkillPoints = Shared.SkillTree.SkillPoints - cost
+                                task.wait(0.3)
+                                break
+                            end
+                        end
+                    end
+                end
+            end)
+        end
+    end
+end)
+
+-- =====================================================
+--           KILL AURA (from Source)
+-- =====================================================
+task.spawn(function()
+    while true do
+        task.wait(CFG.KillAuraCD or 0.12)
+        if CFG.KillAura and GetCharacter() then
+            local target = GetNearestAuraTarget()
+            if target then
+                if CFG.AutoEquip and CFG.SelectedWeapon ~= "--" then
+                    equipWeapon(CFG.SelectedWeapon)
+                end
+                local pos = target:GetPivot().Position
+                pcall(function() Remotes.M1:FireServer(pos) end)
+            end
+        end
+    end
+end)
+
+-- =====================================================
+--           SKILL COMBO SYSTEM (from Source)
+-- =====================================================
+task.spawn(function()
+    local keyToSlot = {Z=1, X=2, C=3, V=4, F=5}
+    local comboIdx = 1
+    while true do
+        task.wait(0.1)
+        if not CFG.AutoCombo then
+            comboIdx = 1
+            task.wait(0.5)
+            continue
+        end
+        if not GetCharacter() then continue end
+        local parsed = ParseComboPattern(CFG.ComboPattern)
+        if #parsed == 0 then continue end
+        if comboIdx > #parsed then comboIdx = 1 end
+        if IsBusy() then
+            local ws = tick()
+            repeat task.wait(0.1) until not IsBusy() or (tick() - ws > 8)
+            task.wait(0.4)
+        end
+        if CFG.ComboBossOnly then
+            local mob = findMobForLevel(200)
+            if not mob or not mob.Name:lower():find("boss") then
+                comboIdx = 1
+                task.wait(0.5)
+                continue
+            end
+        end
+        local currentAction = parsed[comboIdx]
+        local waitTime = tonumber(currentAction)
+        if waitTime then
+            if CFG.ComboMode ~= "Instant" then task.wait(waitTime) end
+            comboIdx = comboIdx + 1
+        else
+            local slot = keyToSlot[currentAction]
+            if slot then
+                if currentAction == "F" then
+                    pcall(function() Remotes.UseSkill:FireServer(5) end)
+                    local ffStart = tick()
+                    repeat task.wait(0.1) until IsBusy() or (tick() - ffStart > 2)
+                    if IsBusy() then
+                        local holdStart = tick()
+                        repeat task.wait(0.1) until not IsBusy() or (tick() - holdStart > 15)
+                    else
+                        task.wait(2.5)
+                    end
+                else
+                    pcall(function() Remotes.UseSkill:FireServer(slot) end)
+                    if CFG.ComboMode ~= "Instant" then task.wait(0.3) end
+                end
+                comboIdx = comboIdx + 1
+            else
+                comboIdx = comboIdx + 1
+            end
+        end
+        if comboIdx > #parsed then
+            comboIdx = 1
+            task.wait(0.5)
+        end
+    end
+end)
+
+-- =====================================================
+--           ANTI-KNOCKBACK (from Source)
+-- =====================================================
+task.spawn(function()
+    local function applyAKB(character)
+        if not character then return end
+        local root = character:WaitForChild("HumanoidRootPart", 10)
+        if root then
+            root.ChildAdded:Connect(function(child)
+                if not CFG.AntiKnockback then return end
+                if child:IsA("BodyVelocity") and child.MaxForce == Vector3.new(40000, 40000, 40000) then
+                    child:Destroy()
+                end
+            end)
+        end
+    end
+    if Plr.Character then applyAKB(Plr.Character) end
+    Plr.CharacterAdded:Connect(applyAKB)
+end)
+
+-- =====================================================
+--           NOCLIP (from Source)
+-- =====================================================
+RunService.Stepped:Connect(function()
+    if CFG.Noclip and GetCharacter() then
+        for _, part in pairs(GetCharacter():GetDescendants()) do
+            if part:IsA("BasePart") and part.CanCollide then
+                part.CanCollide = false
+            end
+        end
+    end
+end)
+
+-- =====================================================
+--           AUTO KICK SAFETY (from Source)
+-- =====================================================
+task.spawn(function()
+    local TargetGroupId = 1002185259
+    local BannedRanks = {255, 254, 175, 150}
+    task.wait(3)
+    local function checkPlayer(p)
+        if not CFG.AutoKick or p == Plr then return end
+        local ok, rank = pcall(function() return p:GetRankInGroup(TargetGroupId) end)
+        if ok and table.find(BannedRanks, rank) then
+            task.wait(0.5)
+            Plr:Kick("\n[Himono Hub]\nModerator Detected: " .. p.Name)
+        end
+    end
+    for _, p in ipairs(Players:GetPlayers()) do checkPlayer(p) end
+    Players.PlayerAdded:Connect(checkPlayer)
+end)
+
+-- =====================================================
+--     DELETE SPAM NOTIFICATIONS (from Source)
+-- =====================================================
+pcall(function()
+    local notifBlacklist = {"You don't have this item!", "Not enough "}
+    local notifUI = PGui:FindFirstChild("NotificationUI")
+    if notifUI then
+        notifUI.DescendantAdded:Connect(function(obj)
+            if not CFG.AutoDeleteNotif then return end
+            task.delay(0.02, function()
+                if not obj or not obj.Parent then return end
+                if obj:IsA("TextLabel") then
+                    local txt = obj.Text:lower()
+                    for _, phrase in ipairs(notifBlacklist) do
+                        if txt:find(phrase:lower()) then
+                            pcall(function() obj.Parent.Visible = false end)
+                            break
+                        end
+                    end
+                end
+            end)
+        end)
+    end
+end)
+
+-- =====================================================
+--     WEBHOOK LOOP (from Source)
+-- =====================================================
+task.spawn(function()
+    while true do
+        safeWait(60, 0.1)
+        if CFG.SendWebhook then
+            PostToWebhook()
+            local delay = math.max((CFG.WebhookDelay or 5) - 1, 0) * 60
+            if delay > 0 then task.wait(delay) end
+        end
+    end
+end)
+
+-- =====================================================
+--     ITEM DROP LISTENER (for Webhook)
+-- =====================================================
+pcall(function()
+    local notifyDrop = RS:FindFirstChild("Remotes") and RS.Remotes:FindFirstChild("NotifyItemDrop")
+    if notifyDrop then
+        notifyDrop.OnClientEvent:Connect(function(data)
+            if not data or type(data) ~= "table" or not data.name then return end
+            NewItemsBuffer[data.name] = (NewItemsBuffer[data.name] or 0) + (data.quantity or 1)
+        end)
+    end
+end)
+
+-- =====================================================
+--     ARTIFACT AUTOMATION (from Source)
+-- =====================================================
+task.spawn(function()
+    while true do
+        safeWait(5, 0.3)
+        if not (CFG.ArtifactUpgrade or CFG.ArtifactLock or CFG.ArtifactDelete or CFG.ArtifactEquipBest) then
+            continue
+        end
+        if not Shared.ArtifactSession.Inventory or not next(Shared.ArtifactSession.Inventory) then
+            pcall(function() Remotes.ArtifactUnequip:FireServer("") end)
+            task.wait(2)
+            continue
+        end
+        local lockQueue, deleteQueue, upgradeQueue = {}, {}, {}
+        for uuid, data in pairs(Shared.ArtifactSession.Inventory) do
+            if CFG.ArtifactUpgrade and data.Level < (CFG.ArtifactUpgradeLimit or 12) then
+                table.insert(upgradeQueue, {["UUID"] = uuid, ["Levels"] = CFG.ArtifactUpgradeLimit or 12})
+            end
+            if CFG.ArtifactLock and not data.Locked then
+                local ssCount = #(data.Substats or {})
+                if ssCount >= (CFG.ArtifactLockMinSS or 3) then
+                    table.insert(lockQueue, uuid)
+                end
+            end
+            if CFG.ArtifactDelete and not data.Locked then
+                local shouldLock = false
+                for _, luuid in ipairs(lockQueue) do
+                    if luuid == uuid then shouldLock = true; break end
+                end
+                if not shouldLock then
+                    table.insert(deleteQueue, uuid)
+                end
+            end
+        end
+        for _, uuid in ipairs(lockQueue) do
+            pcall(function() Remotes.ArtifactLock:FireServer(uuid, true) end)
+            task.wait(0.1)
+        end
+        if #deleteQueue > 0 then
+            for i = 1, #deleteQueue, 50 do
+                local chunk = {}
+                for j = i, math.min(i + 49, #deleteQueue) do table.insert(chunk, deleteQueue[j]) end
+                pcall(function() Remotes.MassDelete:FireServer(chunk) end)
+                task.wait(0.6)
+            end
+            pcall(function() Remotes.ArtifactUnequip:FireServer("") end)
+        end
+        if #upgradeQueue > 0 then
+            for i = 1, #upgradeQueue, 50 do
+                local chunk = {}
+                for j = i, math.min(i + 49, #upgradeQueue) do table.insert(chunk, upgradeQueue[j]) end
+                pcall(function() Remotes.MassUpgrade:FireServer(chunk) end)
+                task.wait(0.6)
+            end
+        end
+        if CFG.ArtifactEquipBest then
+            local bestItems = { Helmet = nil, Gloves = nil, Body = nil, Boots = nil }
+            local bestScores = { Helmet = -1, Gloves = -1, Body = -1, Boots = -1 }
+            for uuid, data in pairs(Shared.ArtifactSession.Inventory) do
+                if bestItems[data.Category] then
+                    local score = (data.Level or 0) + (#(data.Substats or {}) * 10)
+                    if score > bestScores[data.Category] then
+                        bestScores[data.Category] = score
+                        bestItems[data.Category] = {UUID = uuid, Equipped = data.Equipped}
+                    end
+                end
+            end
+            for _, item in pairs(bestItems) do
+                if item and not item.Equipped then
+                    pcall(function() Remotes.ArtifactEquip:FireServer(item.UUID) end)
+                    task.wait(0.2)
+                end
+            end
+        end
+    end
+end)
+
+-- =====================================================
+--     ARTIFACT MILESTONE CLAIM (from Source)
+-- =====================================================
+task.spawn(function()
+    local milestone = 1
+    while true do
+        safeWait(1.5, 0.2)
+        if CFG.ArtifactMilestone and Remotes.ArtifactClaim then
+            pcall(function() Remotes.ArtifactClaim:FireServer(milestone) end)
+            milestone = milestone + 1
+            if milestone > 40 then milestone = 1 end
+        end
+    end
+end)
+
+-- =====================================================
+--     AUTO ENCHANT / BLESSING (from Source)
+-- =====================================================
+task.spawn(function()
+    while true do
+        safeWait(1.5, 0.2)
+        if CFG.AutoEnchant and CFG.SelectedEnchant and CFG.SelectedEnchant ~= "" then
+            pcall(function() Remotes.Enchant:FireServer(CFG.SelectedEnchant) end)
+        end
+        if CFG.AutoBlessing and CFG.SelectedBlessing and CFG.SelectedBlessing ~= "" then
+            pcall(function() Remotes.Blessing:FireServer(CFG.SelectedBlessing) end)
+        end
+    end
+end)
+
+-- =====================================================
+--     AUTO CHEST OPENING (from Source)
+-- =====================================================
+task.spawn(function()
+    while true do
+        safeWait(2, 0.3)
+        if CFG.AutoChest and type(CFG.SelectedChests) == "table" then
+            for _, rarity in ipairs(CFG.SelectedChests) do
+                local fullName = (rarity == "Aura Crate") and "Aura Crate" or (rarity == "Cosmetic Crate") and "Cosmetic Crate" or (rarity .. " Chest")
+                pcall(function() Remotes.UseItem:FireServer("Use", fullName, 10000) end)
+                task.wait(0.8)
+            end
+        end
+    end
+end)
+
+-- =====================================================
+--     AUTO CRAFT (from Source)
+-- =====================================================
+task.spawn(function()
+    while true do
+        safeWait(2, 0.3)
+        if CFG.AutoCraft and type(CFG.SelectedCraft) == "table" then
+            for _, craftItem in ipairs(CFG.SelectedCraft) do
+                if craftItem == "DivineGrail" then
+                    for _, item in pairs(Shared.Cached.Inv) do
+                        if item.name == "Broken Sword" and item.quantity >= 3 then
+                            pcall(function() Remotes.GrailCraft:InvokeServer("DivineGrail", math.floor(item.quantity / 3)) end)
+                            task.wait(0.5)
+                        end
+                    end
+                elseif craftItem == "SlimeKey" then
+                    for _, item in pairs(Shared.Cached.Inv) do
+                        if item.name == "Slime Shard" and item.quantity >= 2 then
+                            pcall(function() Remotes.SlimeCraft:InvokeServer("SlimeKey", math.floor(item.quantity / 2)) end)
+                            task.wait(0.5)
+                        end
+                    end
+                end
+            end
+        end
+    end
+end)
+
+-- =====================================================
+--     TITLE / RUNE / BUILD AUTO-SWITCH (from Source)
+-- =====================================================
+task.spawn(function()
+    while true do
+        safeWait(2, 0.3)
+        local nearBoss = false
+        local bossHP = 100
+        for _, v in ipairs(PATH.Mobs:GetChildren()) do
+            if v:IsA("Model") and v.Name:lower():find("boss") then
+                local hum = v:FindFirstChildOfClass("Humanoid")
+                if hum and hum.Health > 0 then
+                    nearBoss = true
+                    bossHP = (hum.Health / hum.MaxHealth) * 100
+                    break
+                end
+            end
+        end
+        local farmType = nearBoss and "Boss" or "None"
+        if CFG.AutoTitle then
+            local toEquip = CFG.DefaultTitle or "None"
+            if farmType == "Boss" then toEquip = CFG.Title_Boss or toEquip end
+            if toEquip and toEquip ~= "None" and toEquip ~= "" then
+                if toEquip:find("Best ") then
+                    local statMap = {["Best EXP"]="XPPercent",["Best Money"]="MoneyPercent",["Best Luck"]="LuckPercent",["Best DMG"]="DamagePercent"}
+                    local tStat = statMap[toEquip]
+                    if tStat and #Tables.UnlockedTitle > 0 then
+                        local bestId, bestVal = nil, -1
+                        for _, tid in ipairs(Tables.UnlockedTitle) do
+                            local td = Modules.Title.Titles and Modules.Title.Titles[tid]
+                            if td and td.statBonuses and td.statBonuses[tStat] and td.statBonuses[tStat] > bestVal then
+                                bestVal = td.statBonuses[tStat]; bestId = tid
+                            end
+                        end
+                        if bestId then toEquip = bestId end
+                    end
+                end
+                if toEquip ~= Shared.LastSwitch.Title then
+                    pcall(function() Remotes.EquipTitle:FireServer(toEquip) end)
+                    Shared.LastSwitch.Title = toEquip
+                end
+            end
+        end
+        if CFG.AutoRune then
+            local toEquip = CFG.DefaultRune or "None"
+            if farmType == "Boss" then toEquip = CFG.Rune_Boss or toEquip end
+            if toEquip and toEquip ~= "None" and toEquip ~= "" and toEquip ~= Shared.LastSwitch.Rune then
+                pcall(function() Remotes.EquipRune:FireServer("Equip", toEquip) end)
+                Shared.LastSwitch.Rune = toEquip
+            end
+        end
+        if CFG.AutoBuild and tick() - Shared.LastBuildSwitch > 3.1 then
+            local toEquip = CFG.DefaultBuild or "None"
+            if farmType == "Boss" then toEquip = CFG.Build_Boss or toEquip end
+            if toEquip and toEquip ~= "None" and toEquip ~= "" then
+                local loadNum = tonumber(toEquip)
+                if loadNum then
+                    pcall(function() Remotes.LoadoutLoad:FireServer(loadNum) end)
+                    Shared.LastBuildSwitch = tick()
+                end
+            end
+        end
+    end
+end)
+
+-- =====================================================
+--     AUTO RECONNECT (improved, from Source)
+-- =====================================================
+pcall(function()
+    GuiService.ErrorMessageChanged:Connect(function()
+        if not CFG.AutoRejoin then return end
+        task.delay(3, function()
+            pcall(function()
+                local promptOverlay = game:GetService("CoreGui"):FindFirstChild("RobloxPromptGui")
+                if promptOverlay then
+                    local errorPrompt = promptOverlay.promptOverlay:FindFirstChild("ErrorPrompt")
+                    if errorPrompt and errorPrompt.Visible then
+                        task.wait(5)
+                        TeleportSvc:Teleport(game.PlaceId, Plr)
+                    end
+                end
+            end)
+        end)
+    end)
+end)
+
+-- =====================================================
+Rayfield:LoadConfiguration()
+
+Rayfield:Notify({
+    Title    = "Himono Hub",
+    Content  = "Loaded!",
+    Duration = 6,
+    Image    = 4483362458,
+})
